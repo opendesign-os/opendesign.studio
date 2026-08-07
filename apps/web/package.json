@@ -1,0 +1,22 @@
+{
+  "name": "@opendesign/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@opendesign/app": "workspace:*",
+    "@opendesign/platform": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "^8.2.0",
+    "vue-tsc": "^3.3.8"
+  }
+}

@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@opendesign/ui/theme.css";
+
+@source ".";
+@source "../../ui/src";
+
+@layer base {
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .page-hint {
+    @apply flex h-full flex-col items-center justify-center gap-3 text-sm;
+  }
+}
