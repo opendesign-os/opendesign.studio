@@ -5,7 +5,11 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "types": ["node"],
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@opendesign/shadcn": ["./src/index.ts"],
+      "@opendesign/shadcn/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.vue"]
 }

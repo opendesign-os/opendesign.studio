@@ -11,7 +11,9 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@opendesign/shadcn": "workspace:*"
+    "@lucide/vue": "^1.28.0",
+    "@opendesign/shadcn": "workspace:*",
+    "shiki": "^4.4.2"
   },
   "peerDependencies": {
     "vue": "^3.5.40"

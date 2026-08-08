@@ -13,6 +13,14 @@ import { lazyRouteComponent } from '@tanstack/vue-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as ColabRouteImport } from './routes/colab'
+import { Route as CompaniesRouteImport } from './routes/companies'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as ChatsIdRouteImport } from './routes/chats.$id'
+import { Route as CodeIndexRouteImport } from './routes/code.index'
+import { Route as CodeNameRouteImport } from './routes/code.$name'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,31 +42,174 @@ const SplatRoute = SplatRouteImport.update({
     'default',
   ),
 })
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/agents.component.vue'),
+    'default',
+  ),
+})
+const ColabRoute = ColabRouteImport.update({
+  id: '/colab',
+  path: '/colab',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/colab.component.vue'),
+    'default',
+  ),
+})
+const CompaniesRoute = CompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/companies.component.vue'),
+    'default',
+  ),
+})
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/projects.component.vue'),
+    'default',
+  ),
+})
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/tasks.component.vue'),
+    'default',
+  ),
+})
+const ChatsIdRoute = ChatsIdRouteImport.update({
+  id: '/chats/$id',
+  path: '/chats/$id',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/chats.$id.component.vue'),
+    'default',
+  ),
+})
+const CodeIndexRoute = CodeIndexRouteImport.update({
+  id: '/code/',
+  path: '/code/',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/code.index.component.vue'),
+    'default',
+  ),
+})
+const CodeNameRoute = CodeNameRouteImport.update({
+  id: '/code/$name',
+  path: '/code/$name',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/code.$name.component.vue'),
+    'default',
+  ),
+})
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/agents': typeof AgentsRoute
+  '/colab': typeof ColabRoute
+  '/companies': typeof CompaniesRoute
+  '/projects': typeof ProjectsRoute
+  '/tasks': typeof TasksRoute
+  '/chats/$id': typeof ChatsIdRoute
+  '/code/$name': typeof CodeNameRoute
+  '/code/': typeof CodeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/agents': typeof AgentsRoute
+  '/colab': typeof ColabRoute
+  '/companies': typeof CompaniesRoute
+  '/projects': typeof ProjectsRoute
+  '/tasks': typeof TasksRoute
+  '/chats/$id': typeof ChatsIdRoute
+  '/code/$name': typeof CodeNameRoute
+  '/code': typeof CodeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/agents': typeof AgentsRoute
+  '/colab': typeof ColabRoute
+  '/companies': typeof CompaniesRoute
+  '/projects': typeof ProjectsRoute
+  '/tasks': typeof TasksRoute
+  '/chats/$id': typeof ChatsIdRoute
+  '/code/$name': typeof CodeNameRoute
+  '/code/': typeof CodeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/agents'
+    | '/colab'
+    | '/companies'
+    | '/projects'
+    | '/tasks'
+    | '/chats/$id'
+    | '/code/$name'
+    | '/code/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$'
-  id: '__root__' | '/' | '/$'
+  to:
+    | '/'
+    | '/$'
+    | '/agents'
+    | '/colab'
+    | '/companies'
+    | '/projects'
+    | '/tasks'
+    | '/chats/$id'
+    | '/code/$name'
+    | '/code'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/agents'
+    | '/colab'
+    | '/companies'
+    | '/projects'
+    | '/tasks'
+    | '/chats/$id'
+    | '/code/$name'
+    | '/code/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  AgentsRoute: typeof AgentsRoute
+  ColabRoute: typeof ColabRoute
+  CompaniesRoute: typeof CompaniesRoute
+  ProjectsRoute: typeof ProjectsRoute
+  TasksRoute: typeof TasksRoute
+  ChatsIdRoute: typeof ChatsIdRoute
+  CodeNameRoute: typeof CodeNameRoute
+  CodeIndexRoute: typeof CodeIndexRoute
 }
 
 declare module '@tanstack/vue-router' {
@@ -77,12 +228,76 @@ declare module '@tanstack/vue-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/colab': {
+      id: '/colab'
+      path: '/colab'
+      fullPath: '/colab'
+      preLoaderRoute: typeof ColabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies': {
+      id: '/companies'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof CompaniesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chats/$id': {
+      id: '/chats/$id'
+      path: '/chats/$id'
+      fullPath: '/chats/$id'
+      preLoaderRoute: typeof ChatsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/code/': {
+      id: '/code/'
+      path: '/code'
+      fullPath: '/code/'
+      preLoaderRoute: typeof CodeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/code/$name': {
+      id: '/code/$name'
+      path: '/code/$name'
+      fullPath: '/code/$name'
+      preLoaderRoute: typeof CodeNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  AgentsRoute: AgentsRoute,
+  ColabRoute: ColabRoute,
+  CompaniesRoute: CompaniesRoute,
+  ProjectsRoute: ProjectsRoute,
+  TasksRoute: TasksRoute,
+  ChatsIdRoute: ChatsIdRoute,
+  CodeNameRoute: CodeNameRoute,
+  CodeIndexRoute: CodeIndexRoute,
 }
 export const routeTree = rootRouteImport
   .update({

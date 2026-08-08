@@ -1,3 +1,5 @@
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/jetbrains-mono";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@opendesign/shadcn/theme.css";
@@ -12,11 +14,19 @@
       env(safe-area-inset-left);
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
   }
+}
+
+@utility surface-glow {
+  background-image:
+    radial-gradient(62rem 42rem at 118% 8%, var(--glow-warm), transparent 62%),
+    radial-gradient(52rem 38rem at 108% 96%, var(--glow-soft), transparent 60%);
 }
 
 @layer components {
   .page-hint {
-    @apply flex h-full flex-col items-center justify-center gap-3 text-sm;
+    @apply text-muted-foreground flex h-full flex-col items-center justify-center gap-3 text-sm;
   }
 }

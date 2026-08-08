@@ -11,6 +11,8 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
     "@lucide/vue": "^1.28.0",
     "@opendesign/components": "workspace:*",
     "@opendesign/platform": "workspace:*",
