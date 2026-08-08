@@ -4,6 +4,10 @@
 @import "tw-animate-css";
 @import "@opendesign/shadcn/theme.css";
 
+@plugin "tailwind-scrollbar" {
+  nocompatible: true;
+}
+
 @source ".";
 @source "../../shadcn/src";
 @source "../../components/src";
@@ -17,6 +21,10 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
   }
+}
+
+@utility scroll-surface {
+  @apply scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border scrollbar-thumb-rounded-full hover:scrollbar-thumb-muted-foreground/45;
 }
 
 @utility surface-glow {

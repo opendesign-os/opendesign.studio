@@ -20,7 +20,7 @@ function open(name: string) {
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto px-8 py-10">
+  <div class="scroll-surface h-full overflow-y-auto px-8 py-10">
     <div class="mx-auto max-w-[52rem]">
       <h1 class="text-[3.25rem] leading-none font-bold tracking-tight">CODE</h1>
       <p class="text-muted-foreground mt-4 text-sm">

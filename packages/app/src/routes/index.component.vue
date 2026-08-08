@@ -21,7 +21,7 @@ function start() {
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto">
+  <div class="scroll-surface h-full overflow-y-auto">
     <div class="mx-auto flex min-h-full w-full max-w-[46rem] flex-col justify-center px-6 py-12">
       <div class="flex justify-center">
         <span

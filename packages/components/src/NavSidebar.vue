@@ -33,7 +33,7 @@ const emit = defineEmits<{
 
 <template>
   <Sidebar collapsible="offcanvas" class="border-r-0">
-    <SidebarContent class="gap-0 px-3 pt-4">
+    <SidebarContent class="scroll-surface gap-0 px-3 pt-4">
       <SidebarGroup class="p-0">
         <SidebarMenu class="gap-0.5">
           <SidebarMenuItem v-for="item in actions" :key="item.id">

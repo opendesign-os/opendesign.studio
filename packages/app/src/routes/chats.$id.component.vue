@@ -15,7 +15,7 @@ const feedback = [
 
 <template>
   <div class="flex h-full flex-col">
-    <div class="min-h-0 flex-1 overflow-y-auto px-6 pt-8">
+    <div class="scroll-surface min-h-0 flex-1 overflow-y-auto px-6 pt-8">
       <div class="mx-auto max-w-[42rem] space-y-6">
         <template v-for="message in conversation" :key="message.id">
           <div v-if="message.role === 'user'" class="flex justify-end">

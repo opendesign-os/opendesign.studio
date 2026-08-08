@@ -33,7 +33,7 @@ function close(path: string) {
     <div class="border-border/50 flex h-11 shrink-0 items-center gap-1 border-b px-3">
       <button
         type="button"
-        class="text-muted-foreground hover:text-foreground flex items-center gap-1.5 px-2 text-sm transition-colors"
+        class="text-muted-foreground hover:text-foreground mr-2 flex items-center gap-1.5 px-2 text-sm transition-colors"
         @click="router.navigate({ to: '/code' })"
       >
         <ArrowLeft class="size-3.5" />
@@ -44,17 +44,20 @@ function close(path: string) {
         v-for="path in tabs"
         :key="path"
         type="button"
-        class="flex h-11 items-center gap-2 border-b-2 px-3 text-sm transition-colors"
+        class="flex h-11 items-center gap-2 border-b-2 px-3.5 text-sm transition-colors"
         :class="
           active === path
-            ? 'border-brand text-foreground bg-card/70'
-            : 'text-muted-foreground border-transparent'
+            ? 'border-brand bg-card text-foreground font-medium'
+            : 'text-muted-foreground hover:text-foreground border-transparent'
         "
         @click="active = path"
       >
         <File class="size-3.5 opacity-70" />
         {{ sources[path]?.name }}
-        <X class="size-3.5 opacity-50 hover:opacity-100" @click.stop="close(path)" />
+        <X
+          class="size-3.5 opacity-40 transition-opacity hover:opacity-100"
+          @click.stop="close(path)"
+        />
       </button>
 
       <div class="ml-auto flex items-center gap-2">
@@ -77,7 +80,7 @@ function close(path: string) {
 
     <ResizablePanelGroup direction="horizontal" class="min-h-0 flex-1">
       <ResizablePanel :default-size="22" :min-size="14" :max-size="40">
-        <div class="h-full overflow-y-auto px-3 py-4">
+        <div class="scroll-surface h-full overflow-y-auto px-3 py-4">
           <p class="text-muted-foreground px-2 text-[0.6875rem] tracking-[0.14em] uppercase">
             {{ repository }}
           </p>
@@ -98,7 +101,7 @@ function close(path: string) {
             </template>
           </div>
 
-          <div class="min-h-0 flex-1 overflow-auto px-4 py-3">
+          <div class="scroll-surface min-h-0 flex-1 overflow-auto px-4 py-3">
             <CodeView v-if="source" :code="source.code" :language="source.language" />
             <p v-else class="page-hint">选一个文件查看源码</p>
           </div>
