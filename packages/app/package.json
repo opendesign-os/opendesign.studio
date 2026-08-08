@@ -12,8 +12,9 @@
   },
   "dependencies": {
     "@lucide/vue": "^1.28.0",
+    "@opendesign/components": "workspace:*",
     "@opendesign/platform": "workspace:*",
-    "@opendesign/ui": "workspace:*",
+    "@opendesign/shadcn": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/router-plugin": "^1.168.23",
     "@tanstack/vue-query": "^5.101.4",

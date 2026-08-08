@@ -9,11 +9,11 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@opendesign/ui",
-    "composables": "@opendesign/ui/composables",
-    "utils": "@opendesign/ui/lib/utils",
-    "ui": "@opendesign/ui/ui",
-    "lib": "@opendesign/ui/lib"
+    "components": "@opendesign/shadcn",
+    "composables": "@opendesign/shadcn/composables",
+    "utils": "@opendesign/shadcn/lib/utils",
+    "ui": "@opendesign/shadcn/ui",
+    "lib": "@opendesign/shadcn/lib"
   },
   "iconLibrary": "lucide"
 }

@@ -14,7 +14,7 @@
       "!apps/native/icon.svg",
       "!pnpm-lock.yaml",
       "!**/routeTree.gen.ts",
-      "!packages/ui/src/ui"
+      "!packages/shadcn/src/ui"
     ]
   },
   "assist": {

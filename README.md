@@ -14,8 +14,9 @@ apps/
     src-tauri/    Rust 工程，桌面与移动共用（lib.rs + mobile_entry_point）
 packages/
   app/            核心应用：路由、布局、页面，跨端共用；vite.ts 导出共享构建预设
+  components/     项目自有组件：组合 shadcn 基件，数据与事件走 props / emit
   platform/       端能力契约（types.ts）+ web.ts / native.ts 两套实现
-  ui/             组件库：shadcn-vue 源码与设计令牌 theme.css
+  shadcn/         shadcn-vue 源码基座与设计令牌 theme.css
 ```
 
 新增端能力时的动作顺序：先在 `packages/platform/src/types.ts` 加字段，再补齐 `web.ts` 与 `native.ts`，核心应用通过 `getPlatform()` 使用，不直接引用任何端的 API。
@@ -62,8 +63,8 @@ pnpm --filter @opendesign/native icon
 - **代码自解释，不写注释**：靠语义化命名表达意图，工厂函数用 `createXXX`，取不到再建用 `getOrCreateXXX`。需要解释的内容写进本文件。
 - **路由**：TanStack Router 文件路由，`packages/app/src/routes` 下每条路由拆两个文件——`xxx.ts` 声明路由（loader / beforeLoad / 校验），`xxx.component.vue` 只写视图。`routeTree.gen.ts` 由插件生成，不要手改。
 - **构建配置**：路由生成与样式扫描口径由 `packages/app/vite.ts` 的 `createAppPlugins()` 统一提供，端壳的 vite 配置只写自己的端口、代理与产物差异。
-- **组件库**：`packages/ui/src/ui` 是 shadcn-vue 生成的源码，用 `pnpm dlx shadcn-vue@latest add <组件>` 追加，Biome 不检查该目录。业务侧统一从 `@opendesign/ui` 导入。
-- **样式**：设计令牌集中在 `packages/ui/src/theme.css`，全局样式与移动端安全区适配在 `packages/app/src/style.css`。
+- **组件分两层**：`packages/shadcn` 只放 shadcn-vue CLI 生成的源码，在该包目录下用 `pnpm dlx shadcn-vue@latest add <组件>` 追加，不手改、Biome 也不检查；项目自有组件写在 `packages/components`，可以组合 shadcn 基件，但不引用路由与业务数据——导航类组件通过 `items` / `active` 接收数据，用 `select` 事件把动作交回 app。
+- **样式**：设计令牌集中在 `packages/shadcn/src/theme.css`，全局样式与移动端安全区适配在 `packages/app/src/style.css`；新增包后要在该文件补 `@source`，否则 Tailwind 扫不到类名。
 - **Tauri 权限**：新增插件后要在 `apps/native/src-tauri/capabilities/default.json` 登记权限，否则前端调用会被拒绝。
 - **依赖版本**：只有基础工具链（typescript / biome / turbo / @types/node）走 `pnpm-workspace.yaml` 的 catalog 统一版本，其余依赖各包自行声明。
 - **代码风格**：Biome 统一格式化与 lint——单引号、按需分号、行宽 100、2 空格缩进。

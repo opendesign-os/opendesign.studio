@@ -1,9 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@opendesign/ui/theme.css";
+@import "@opendesign/shadcn/theme.css";
 
 @source ".";
-@source "../../ui/src";
+@source "../../shadcn/src";
+@source "../../components/src";
 
 @layer base {
   body {

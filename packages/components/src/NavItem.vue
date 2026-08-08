@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SidebarMenuButton, SidebarMenuItem } from '@opendesign/ui'
+import { SidebarMenuButton, SidebarMenuItem } from '@opendesign/shadcn'
 import type { Component } from 'vue'
 
 defineOptions({ inheritAttrs: false })

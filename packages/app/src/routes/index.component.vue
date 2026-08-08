@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getPlatform, type PlatformKind } from '@opendesign/platform'
-import { Button, Input } from '@opendesign/ui'
+import { Button, Input } from '@opendesign/shadcn'
 import { onMounted, ref } from 'vue'
 
 const NOTE_KEY = 'demo.note'
@@ -15,7 +15,8 @@ const kindLabels: Record<PlatformKind, string> = {
 const layers = [
   { name: 'packages/platform', desc: '端能力契约与 web / native 两套实现' },
   { name: 'packages/app', desc: '一套核心应用：路由、布局、页面，只依赖契约' },
-  { name: 'packages/ui', desc: '组件库，shadcn-vue 源码与设计令牌' },
+  { name: 'packages/components', desc: '项目自有组件，数据与事件走 props / emit' },
+  { name: 'packages/shadcn', desc: 'shadcn-vue 源码基座与设计令牌' },
   { name: 'apps/web', desc: '浏览器薄壳，注入 web 实现后挂载' },
   { name: 'apps/native', desc: 'Tauri 薄壳，桌面与移动共用一份 Rust 工程' },
 ]

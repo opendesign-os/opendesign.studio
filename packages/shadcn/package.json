@@ -1,0 +1,31 @@
+{
+  "name": "@opendesign/shadcn",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./theme.css": "./src/theme.css",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.28.0",
+    "@vueuse/core": "^14.4.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "reka-ui": "^2.10.1",
+    "tailwind-merge": "^3.6.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.40"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vue": "^3.5.40",
+    "vue-tsc": "^3.3.8"
+  }
+}
