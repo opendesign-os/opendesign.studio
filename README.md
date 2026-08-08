@@ -33,7 +33,8 @@ packages/
 | `/chats/$id` | 会话详情：消息流、反馈操作、底部输入框 |
 | `/code` | 项目列表：状态徽章、语言标签、代码量进度条 |
 | `/code/$name` | 代码浏览：文件树 + 语法高亮，左右可拖拽分栏 |
-| `/colab` `/projects` `/tasks` `/agents` `/companies` | 占位页 |
+| `/tasks` | 任务看板：统计卡、搜索与筛选、看板/列表双视图、创建任务弹窗 |
+| `/colab` `/projects` `/agents` `/companies` | 占位页 |
 
 `packages/components` 里的组件都不含路由与业务数据，靠 props / emit 接线：
 
@@ -45,6 +46,7 @@ packages/
 | `MessageBlocks` | 消息富文本（标题 / 段落 / 分隔线） |
 | `QuickStartCard` `ProjectCard` | 首页快捷卡片、项目卡片 |
 | `FileTree` `CodeView` | 文件树与 shiki 语法高亮（亮/暗双主题） |
+| `StatCard` `BoardColumn` `TaskCard` `TaskDialog` | 任务看板的统计卡、看板列、任务卡与创建弹窗 |
 
 主题切换写在 `packages/app/src/theme.ts`，深浅偏好经 `platform.store` 持久化——浏览器落到 localStorage，桌面与移动端落到 Tauri store 插件，同一份代码不分叉。首次进入跟随系统偏好。
 

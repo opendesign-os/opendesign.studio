@@ -40,3 +40,27 @@ export type FileNode = {
   kind: 'dir' | 'file'
   children?: FileNode[]
 }
+
+export type Person = {
+  id: string
+  name: string
+  initial: string
+  code: string
+  tone: string
+}
+
+export type Option = {
+  id: string
+  label: string
+  tone?: string
+}
+
+export type TaskItem = {
+  id: string
+  title: string
+  priority: string
+  assignees: Person[]
+  due: string
+  subtasks: number
+  comments: number
+}
