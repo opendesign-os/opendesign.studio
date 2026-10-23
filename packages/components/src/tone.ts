@@ -1,4 +1,4 @@
-import type { RelationKind, ShotStatus } from '@opendesign/models'
+import type { EpisodeStatus, RelationKind, SeriesStatus, ShotStatus } from '@opendesign/models'
 import type { Tone } from './types'
 
 export const fills: Record<Tone, string> = {
@@ -10,14 +10,33 @@ export const fills: Record<Tone, string> = {
   danger: 'bg-destructive',
 }
 
-export const statusTone: Record<ShotStatus, Tone> = {
-  draft: 'neutral',
-  keyframe: 'neutral',
-  generating: 'info',
-  review: 'warn',
-  voiced: 'accent',
-  composed: 'success',
-  failed: 'danger',
+export const tones: {
+  shot: Record<ShotStatus, Tone>
+  episode: Record<EpisodeStatus, Tone>
+  series: Record<SeriesStatus, Tone>
+} = {
+  shot: {
+    draft: 'neutral',
+    keyframe: 'neutral',
+    generating: 'info',
+    review: 'warn',
+    voiced: 'accent',
+    composed: 'success',
+    failed: 'danger',
+  },
+  episode: {
+    draft: 'neutral',
+    parsing: 'info',
+    producing: 'accent',
+    review: 'warn',
+    done: 'success',
+  },
+  series: {
+    writing: 'neutral',
+    producing: 'accent',
+    review: 'warn',
+    published: 'success',
+  },
 }
 
 export const relationColor: Record<RelationKind, string> = {

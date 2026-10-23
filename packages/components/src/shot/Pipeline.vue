@@ -11,7 +11,7 @@ const props = defineProps<{ shot: Shot; assets: Asset[]; busy: boolean }>()
 const emit = defineEmits<{
   generate: [slot: Slot]
   video: []
-  pick: [id: string]
+  select: [id: string]
 }>()
 
 const bound = computed(() => props.assets.filter((item) => props.shot.cast.includes(item.id)))
@@ -49,7 +49,7 @@ const step =
             type="button"
             class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-micro transition-opacity duration-150 hover:opacity-80"
             :style="{ backgroundColor: `${item.color}26`, color: item.color }"
-            @click="emit('pick', item.id)"
+            @click="emit('select', item.id)"
           >
             <span class="size-1 rounded-full" :style="{ backgroundColor: item.color }" />
             {{ item.name }}

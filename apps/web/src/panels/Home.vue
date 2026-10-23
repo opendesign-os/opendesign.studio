@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { CircleAlert, Eye, Film, Lock, Zap } from '@lucide/vue'
 import { SeriesCard } from '@opendesign/components'
-import { useAllEpisodes, useOverview, useSeriesList } from '@opendesign/queries'
+import { useEpisodes, useOverview, useSeriesList } from '@opendesign/queries'
 import { Skeleton } from '@opendesign/shadcn'
 import { computed } from 'vue'
 
 const emit = defineEmits<{ enter: [seriesId: string] }>()
 
 const { data: series, isPending } = useSeriesList()
-const { data: episodes } = useAllEpisodes()
+const { data: episodes } = useEpisodes()
 const { data: overview } = useOverview()
 
 const metrics = computed(() => [

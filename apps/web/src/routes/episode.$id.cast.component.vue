@@ -1,26 +1,21 @@
 <script setup lang="ts">
 import { ArrowLeft, ArrowLeftRight, ArrowRight, Plus, Repeat, Trash2 } from '@lucide/vue'
-import { Picker, relationColor, Tip } from '@opendesign/components'
+import { Avatar, Picker, relationColor, Tip } from '@opendesign/components'
 import Graph from '@opendesign/components/cast/Graph.vue'
 import type { Relation } from '@opendesign/models'
 import { relationKind, relationKindLabel, roleLabel } from '@opendesign/models'
 import {
   useAssets,
   useCreateRelation,
-  useEpisode,
   usePatchRelation,
   useRelations,
   useRemoveRelation,
 } from '@opendesign/queries'
 import { Button, cn, Input, Switch, Textarea } from '@opendesign/shadcn'
-import { useParams } from '@tanstack/vue-router'
 import { computed, ref } from 'vue'
+import { useWorkspace } from '../workspace'
 
-const params = useParams({ from: '/episode/$id/cast' })
-
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
-const seriesId = computed(() => episode.value?.seriesId ?? '')
+const { seriesId } = useWorkspace()
 const { data: assets } = useAssets(seriesId)
 const { data: relations } = useRelations(seriesId)
 const create = useCreateRelation()
@@ -176,12 +171,11 @@ function drop() {
                 class="hover:bg-accent/60 flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors duration-150"
                 @click="focus(id)"
               >
-                <span
-                  class="text-body flex size-10 items-center justify-center rounded-full font-semibold text-white"
-                  :style="{ backgroundColor: roster.get(id)?.color }"
-                >
-                  {{ roster.get(id)?.name.slice(0, 1) }}
-                </span>
+                <Avatar
+                  :name="roster.get(id)?.name"
+                  :color="roster.get(id)?.color"
+                  class="text-body size-10"
+                />
                 <span class="text-data truncate">{{ roster.get(id)?.name ?? '已删除角色' }}</span>
               </button>
             </template>
@@ -262,12 +256,7 @@ function drop() {
         <div class="min-h-0 flex-1 overflow-y-auto">
           <div class="border-border space-y-2 border-b p-4">
             <div class="flex items-center gap-3">
-              <span
-                class="text-title flex size-12 shrink-0 items-center justify-center rounded-full font-semibold text-white"
-                :style="{ backgroundColor: person.color }"
-              >
-                {{ person.name.slice(0, 1) }}
-              </span>
+              <Avatar :name="person.name" :color="person.color" class="text-title size-12" />
               <div class="min-w-0">
                 <p class="text-body font-semibold">{{ person.name }}</p>
                 <p class="text-muted-foreground text-meta">
@@ -293,12 +282,11 @@ function drop() {
                 class="size-3.5 shrink-0"
                 :style="{ color: relationColor[tie.relation.kind] }"
               />
-              <span
-                class="text-micro flex size-6 shrink-0 items-center justify-center rounded-full font-semibold text-white"
-                :style="{ backgroundColor: roster.get(tie.other)?.color }"
-              >
-                {{ roster.get(tie.other)?.name.slice(0, 1) }}
-              </span>
+              <Avatar
+                :name="roster.get(tie.other)?.name"
+                :color="roster.get(tie.other)?.color"
+                class="text-micro size-6"
+              />
               <span class="min-w-0 flex-1">
                 <span class="text-data block truncate">{{ roster.get(tie.other)?.name ?? '已删除角色' }}</span>
                 <span class="text-muted-foreground block truncate text-micro">
@@ -335,12 +323,7 @@ function drop() {
             class="hover:bg-accent/60 flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors duration-150"
             @click="focus(item.id)"
           >
-            <span
-              class="text-data flex size-9 shrink-0 items-center justify-center rounded-full font-semibold text-white"
-              :style="{ backgroundColor: item.color }"
-            >
-              {{ item.name.slice(0, 1) }}
-            </span>
+            <Avatar :name="item.name" :color="item.color" class="text-data size-9" />
             <span class="min-w-0 flex-1">
               <span class="flex items-baseline gap-1.5">
                 <span class="text-data font-medium">{{ item.name }}</span>

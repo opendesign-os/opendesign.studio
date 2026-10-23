@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+export const MIN_DURATION = 0.5
+export const MAX_DURATION = 30
+
 export const shotSize = z.enum(['wide', 'medium', 'close', 'macro'])
 
 export const camera = z.enum(['static', 'push', 'pull', 'pan', 'tilt', 'orbit', 'shake'])
@@ -126,7 +129,7 @@ export const shot = z.object({
   effects: z.array(effect),
   sounds: z.array(sound),
   transition,
-  duration: z.number().positive().max(30, '单镜头最长 30 秒'),
+  duration: z.number().min(MIN_DURATION).max(MAX_DURATION, `单镜头最长 ${MAX_DURATION} 秒`),
   status: shotStatus,
   note: z.string().max(120, '备注最多 120 个字'),
   position: point,

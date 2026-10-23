@@ -1,5 +1,5 @@
 import type { SeriesPatch } from '@opendesign/models'
-import { locked } from '@opendesign/models'
+import { live, locked } from '@opendesign/models'
 import { plain, reject, settle, store } from './store'
 
 export function listSeries() {
@@ -19,7 +19,6 @@ export function patchSeries(id: string, patch: SeriesPatch) {
 }
 
 export function readOverview() {
-  const live = store.tasks.filter((item) => item.status === 'queued' || item.status === 'running')
   return settle({
     series: store.series.length,
     producing: store.series.filter((item) => item.status === 'producing').length,
@@ -27,7 +26,7 @@ export function readOverview() {
     blocked: store.shots.filter((item) => item.status === 'draft' || item.status === 'failed')
       .length,
     review: store.shots.filter((item) => item.status === 'review').length,
-    running: live.length,
+    running: store.tasks.filter(live).length,
     failed: store.tasks.filter((item) => item.status === 'failed').length,
     assets: store.assets.length,
     loose: store.assets

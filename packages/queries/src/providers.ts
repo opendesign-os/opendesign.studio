@@ -1,6 +1,5 @@
-import type { Provider, ProviderPatch } from '@opendesign/models'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { keys } from './keys'
+import { useMutation, useQuery } from '@tanstack/vue-query'
+import { keys, useInvalidate, usePatch } from './cache'
 import * as mock from './mock'
 
 export function useProviders() {
@@ -8,31 +7,13 @@ export function useProviders() {
 }
 
 export function usePatchProvider() {
-  const client = useQueryClient()
-  return useMutation({
-    mutationKey: ['patch', 'provider'],
-    mutationFn: ({ id, patch }: { id: string; patch: ProviderPatch }) =>
-      mock.patchProvider(id, patch),
-    onMutate: async ({ id, patch }) => {
-      await client.cancelQueries({ queryKey: keys.providers })
-      client.setQueryData<Provider[]>(keys.providers, (list) =>
-        list?.map((item) => (item.id === id ? { ...item, ...patch } : item)),
-      )
-    },
-    onSettled: () => {
-      if (client.isMutating({ mutationKey: ['patch', 'provider'] }) === 1) {
-        void client.invalidateQueries({ queryKey: keys.providers })
-      }
-    },
-  })
+  return usePatch({ name: 'provider', scopes: [keys.providers], request: mock.patchProvider })
 }
 
 export function useTestProvider() {
-  const client = useQueryClient()
+  const invalidate = useInvalidate()
   return useMutation({
     mutationFn: mock.testProvider,
-    onSettled: () => {
-      void client.invalidateQueries({ queryKey: keys.providers })
-    },
+    onSettled: () => invalidate(keys.providers),
   })
 }

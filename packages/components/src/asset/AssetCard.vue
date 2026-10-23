@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Lock, LockOpen, Sparkles } from '@lucide/vue'
 import type { Asset, View } from '@opendesign/models'
-import { assetKindLabel, locked, roleLabel, viewLabel, views, voiceLabel } from '@opendesign/models'
+import { assetKindLabel, locked, roleLabel, view, viewLabel, voiceLabel } from '@opendesign/models'
 import { Badge, cn } from '@opendesign/shadcn'
 import { computed } from 'vue'
+import Avatar from '../layout/Avatar.vue'
 import Tip from '../layout/Tip.vue'
 
 const props = defineProps<{ asset: Asset; active: boolean }>()
@@ -15,9 +16,9 @@ const emit = defineEmits<{
 }>()
 
 const slots = computed(() =>
-  views.map((view) => ({
-    view,
-    reference: props.asset.references.find((item) => item.view === view),
+  view.options.map((value) => ({
+    view: value,
+    reference: props.asset.references.find((item) => item.view === value),
   })),
 )
 
@@ -34,12 +35,11 @@ const stable = computed(() => locked(props.asset))
     "
   >
     <button type="button" class="flex w-full items-start gap-2.5 p-3 text-left" @click="emit('select', asset.id)">
-      <span
-        class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg text-body font-medium text-white"
-        :style="{ backgroundColor: asset.color }"
-      >
-        {{ asset.name.slice(0, 1) }}
-      </span>
+      <Avatar
+        :name="asset.name"
+        :color="asset.color"
+        class="mt-0.5 size-8 rounded-lg text-body font-medium"
+      />
       <span class="min-w-0 flex-1">
         <span class="flex flex-wrap items-center gap-1.5">
           <span class="truncate text-body font-medium">{{ asset.name }}</span>

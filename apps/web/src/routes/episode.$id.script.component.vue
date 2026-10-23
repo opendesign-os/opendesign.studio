@@ -4,27 +4,22 @@ import { Candidates, Screenplay, Tip } from '@opendesign/components'
 import {
   useAssets,
   useCandidates,
-  useEpisode,
-  useParseEpisode,
+  useCreateTask,
   usePatchEpisode,
   useResolveCandidate,
   useSeries,
 } from '@opendesign/queries'
 import { Button, cn } from '@opendesign/shadcn'
-import { useParams } from '@tanstack/vue-router'
 import { useLocalStorage } from '@vueuse/core'
 import { computed } from 'vue'
+import { useWorkspace } from '../workspace'
 
-const params = useParams({ from: '/episode/$id/script' })
-
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
-const seriesId = computed(() => episode.value?.seriesId ?? '')
+const { episodeId, episode, seriesId } = useWorkspace()
 const { data: series } = useSeries(seriesId)
 const { data: assets } = useAssets(seriesId)
 const { data: candidates } = useCandidates(episodeId)
-const patchEpisode = usePatchEpisode()
-const parse = useParseEpisode()
+const patch = usePatchEpisode()
+const parse = useCreateTask()
 const resolve = useResolveCandidate()
 
 const drawer = useLocalStorage('script-candidates', true)
@@ -36,7 +31,7 @@ const speakers = computed(() =>
     .map((item) => ({ name: item.name, color: item.color })),
 )
 
-function acceptAll() {
+function collect() {
   for (const item of pending.value) resolve.mutate({ id: item.id, accept: true })
 }
 </script>
@@ -49,8 +44,8 @@ function acceptAll() {
         :parsing="parse.isPending.value || episode?.status === 'parsing'"
         :speakers="speakers"
         :outline="series?.outline ?? ''"
-        @save="patchEpisode.mutate({ id: episodeId, patch: { script: $event } })"
-        @parse="parse.mutate(episodeId)"
+        @save="patch.mutate({ id: episodeId, patch: { script: $event } })"
+        @parse="parse.mutate({ kind: 'script', episodeId })"
       >
         <template #actions>
           <Tip :label="drawer ? '收起候选资产' : `候选资产 · ${pending.length}`">
@@ -81,7 +76,7 @@ function acceptAll() {
             size="icon-sm"
             class="text-muted-foreground ml-auto"
             :disabled="!pending.length || resolve.isPending.value"
-            @click="acceptAll"
+            @click="collect"
           >
             <CheckCheck />
           </Button>

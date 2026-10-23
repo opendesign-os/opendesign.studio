@@ -11,6 +11,7 @@ import { Handle, MarkerType, Panel, Position, useVueFlow, VueFlow } from '@vue-f
 import '@vue-flow/core/dist/style.css'
 import { useLocalStorage } from '@vueuse/core'
 import { computed, nextTick, ref } from 'vue'
+import Avatar from '../layout/Avatar.vue'
 import Tip from '../layout/Tip.vue'
 import { relationColor } from '../tone'
 import Bond from './Bond.vue'
@@ -219,12 +220,7 @@ function clear() {
         "
       >
         <div class="flex items-center gap-2.5">
-          <span
-            class="text-data flex size-9 shrink-0 items-center justify-center rounded-full font-semibold text-white"
-            :style="{ backgroundColor: data.person.color }"
-          >
-            {{ data.person.name.slice(0, 1) }}
-          </span>
+          <Avatar :name="data.person.name" :color="data.person.color" class="text-data size-9" />
           <span class="min-w-0">
             <span class="text-data block truncate font-semibold">{{ data.person.name }}</span>
             <span class="text-muted-foreground block text-micro">

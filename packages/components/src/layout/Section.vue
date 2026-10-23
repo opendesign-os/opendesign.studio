@@ -14,7 +14,7 @@ withDefaults(defineProps<{ title: string; icon?: Component; enabled?: boolean }>
   enabled: undefined,
 })
 
-const emit = defineEmits<{ toggle: [value: boolean] }>()
+const emit = defineEmits<{ 'update:enabled': [value: boolean] }>()
 const open = defineModel<boolean>('open', { default: true })
 </script>
 
@@ -25,7 +25,7 @@ const open = defineModel<boolean>('open', { default: true })
         v-if="enabled !== undefined"
         :model-value="enabled"
         :aria-label="title"
-        @update:model-value="emit('toggle', $event === true)"
+        @update:model-value="emit('update:enabled', $event === true)"
       />
       <CollapsibleTrigger class="group flex min-w-0 flex-1 items-center gap-2 text-left">
         <component :is="icon" v-if="icon" class="text-muted-foreground size-3.5 shrink-0" />

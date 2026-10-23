@@ -1,27 +1,16 @@
 <script setup lang="ts">
 import { Check } from '@lucide/vue'
-import { fills, type Tone } from '@opendesign/components'
-import type { EpisodeStatus } from '@opendesign/models'
+import { fills, tones } from '@opendesign/components'
 import { episodeStatusLabel } from '@opendesign/models'
-import { useEpisode, useEpisodes } from '@opendesign/queries'
+import { useEpisodes } from '@opendesign/queries'
 import { cn } from '@opendesign/shadcn'
-import { useParams } from '@tanstack/vue-router'
 import { computed } from 'vue'
+import { useWorkspace } from '../workspace'
 
 const emit = defineEmits<{ open: [episodeId: string] }>()
 
-const tones: Record<EpisodeStatus, Tone> = {
-  draft: 'neutral',
-  parsing: 'info',
-  producing: 'accent',
-  review: 'warn',
-  done: 'success',
-}
-
-const params = useParams({ from: '/episode/$id' })
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
-const { data: episodes } = useEpisodes(computed(() => episode.value?.seriesId ?? ''))
+const { episodeId, seriesId } = useWorkspace()
+const { data: episodes } = useEpisodes(seriesId)
 
 const rows = computed(() => [...(episodes.value ?? [])].sort((a, b) => a.index - b.index))
 </script>
@@ -50,7 +39,7 @@ const rows = computed(() => [...(episodes.value ?? [])].sort((a, b) => a.index -
       </span>
       <span
         :title="episodeStatusLabel[item.status]"
-        :class="cn('size-1.5 shrink-0 rounded-full', fills[tones[item.status]])"
+        :class="cn('size-1.5 shrink-0 rounded-full', fills[tones.episode[item.status]])"
       />
       <Check :class="cn('size-3.5 shrink-0', item.id === episodeId ? 'opacity-100' : 'opacity-0')" />
     </button>

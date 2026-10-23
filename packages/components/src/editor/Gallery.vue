@@ -2,10 +2,10 @@
 import type { Placement } from '@opendesign/models'
 import { cn } from '@opendesign/shadcn'
 import Thumbnail from '../shot/Thumbnail.vue'
-import { fills, statusTone } from '../tone'
+import { fills, tones } from '../tone'
 
 defineProps<{ placements: Placement[]; current: string }>()
-const emit = defineEmits<{ pick: [id: string] }>()
+const emit = defineEmits<{ select: [id: string] }>()
 </script>
 
 <template>
@@ -15,7 +15,7 @@ const emit = defineEmits<{ pick: [id: string] }>()
         type="button"
         :title="item.shot.scene"
         class="group block w-full"
-        @click="emit('pick', item.shot.id)"
+        @click="emit('select', item.shot.id)"
       >
         <Thumbnail
           :shot="item.shot"
@@ -29,7 +29,7 @@ const emit = defineEmits<{ pick: [id: string] }>()
           <span
             class="text-micro absolute top-1.5 left-1.5 flex items-center gap-1 rounded-md bg-black/45 px-1.5 py-0.5 leading-3.5 font-semibold text-white backdrop-blur-sm"
           >
-            <span :class="cn('size-1.5 rounded-full', fills[statusTone[item.shot.status]])" />
+            <span :class="cn('size-1.5 rounded-full', fills[tones.shot[item.shot.status]])" />
             镜 {{ item.shot.index }}
           </span>
           <span

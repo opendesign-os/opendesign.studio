@@ -1,22 +1,11 @@
 <script setup lang="ts">
-import type { Camera, Frame, Move } from '@opendesign/models'
-import { cameraLabel, moves } from '@opendesign/models'
+import type { Camera, Move } from '@opendesign/models'
+import { camera, cameraLabel, moves } from '@opendesign/models'
 import { cn } from '@opendesign/shadcn'
+import { crop } from '../shot/artwork'
 
 defineProps<{ move: Move }>()
 const emit = defineEmits<{ apply: [kind: Camera] }>()
-
-const kinds = Object.keys(cameraLabel) as Camera[]
-
-function box(value: Frame) {
-  const size = 100 / value.scale
-  return {
-    left: `${50 + value.x - size / 2}%`,
-    top: `${50 + value.y - size / 2}%`,
-    width: `${size}%`,
-    height: `${size}%`,
-  }
-}
 </script>
 
 <template>
@@ -25,7 +14,7 @@ function box(value: Frame) {
       套用到当前镜头，实线是起幅、虚线是落幅，细调在右侧「运镜」
     </p>
     <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(7rem,100%),1fr))] gap-2">
-      <li v-for="kind in kinds" :key="kind">
+      <li v-for="kind in camera.options" :key="kind">
         <button type="button" class="group w-full text-left" @click="emit('apply', kind)">
           <span
             :class="
@@ -36,10 +25,10 @@ function box(value: Frame) {
             "
           >
             <span class="bg-card absolute inset-[16%] rounded-[4px]">
-              <span class="border-primary absolute rounded-[3px] border-2" :style="box(moves[kind].from)" />
+              <span class="border-primary absolute rounded-[3px] border-2" :style="crop(moves[kind].from)" />
               <span
                 class="border-media absolute rounded-[3px] border-2 border-dashed"
-                :style="box(moves[kind].to)"
+                :style="crop(moves[kind].to)"
               />
             </span>
           </span>

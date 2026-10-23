@@ -3,16 +3,10 @@ import type { Episode, Series } from '@opendesign/models'
 import { formats, seriesStatusLabel } from '@opendesign/models'
 import { Badge, Progress } from '@opendesign/shadcn'
 import { computed } from 'vue'
+import { tones } from '../tone'
 
 const props = defineProps<{ series: Series; episodes: Episode[] }>()
 const emit = defineEmits<{ open: [id: string] }>()
-
-const tones = {
-  writing: 'neutral',
-  producing: 'accent',
-  review: 'warn',
-  published: 'success',
-} as const
 
 const progress = computed(() => {
   const shots = props.episodes.reduce((total, item) => total + item.shots, 0)
@@ -33,7 +27,7 @@ const progress = computed(() => {
         backgroundImage: `linear-gradient(140deg, ${series.color}44, transparent 70%), linear-gradient(20deg, ${series.color}22, transparent 60%)`,
       }"
     >
-      <Badge :variant="tones[series.status]">
+      <Badge :variant="tones.series[series.status]">
         <span class="size-1.5 rounded-full bg-current" />
         {{ seriesStatusLabel[series.status] }}
       </Badge>

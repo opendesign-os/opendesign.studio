@@ -15,6 +15,7 @@ export type Action = {
   group: string
   hint?: string
   icon?: Component
+  run: () => void
 }
 
 export type Span = {

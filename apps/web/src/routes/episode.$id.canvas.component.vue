@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { LayoutGrid, Search } from '@lucide/vue'
-import { Thumbnail, Tip } from '@opendesign/components'
+import { Avatar, Thumbnail, Tip } from '@opendesign/components'
 import Canvas from '@opendesign/components/episode/Canvas.vue'
 import { arrange, assetKindLabel } from '@opendesign/models'
-import { useAssets, useEpisode, usePatchShot, useShots } from '@opendesign/queries'
+import { useAssets, usePatchShot, useShots } from '@opendesign/queries'
 import {
   Button,
   Card,
@@ -14,18 +14,17 @@ import {
   TabsList,
   TabsTrigger,
 } from '@opendesign/shadcn'
-import { useParams, useRouter, useSearch } from '@tanstack/vue-router'
+import { useRouter, useSearch } from '@tanstack/vue-router'
 import { computed, nextTick, ref } from 'vue'
+import { useWorkspace } from '../workspace'
 
-const params = useParams({ from: '/episode/$id/canvas' })
 const search = useSearch({ from: '/episode/$id/canvas' })
 const router = useRouter()
 
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
+const { episodeId, seriesId } = useWorkspace()
 const { data: shots } = useShots(episodeId)
-const { data: assets } = useAssets(computed(() => episode.value?.seriesId ?? ''))
-const patchShot = usePatchShot()
+const { data: assets } = useAssets(seriesId)
+const patch = usePatchShot()
 
 const side = ref('shots')
 const needle = ref('')
@@ -69,7 +68,7 @@ function reveal(id: string) {
 }
 
 function place(id: string, x: number, y: number) {
-  patchShot.mutate({ id, patch: { position: { x, y } } })
+  patch.mutate({ id, patch: { position: { x, y } } })
 }
 
 async function tidy() {
@@ -143,12 +142,7 @@ async function tidy() {
             "
             @click="spotlight = spotlight === item.id ? null : item.id"
           >
-            <span
-              class="text-body flex size-9 shrink-0 items-center justify-center rounded-md font-semibold text-white"
-              :style="{ backgroundColor: item.color }"
-            >
-              {{ item.name.slice(0, 1) }}
-            </span>
+            <Avatar :name="item.name" :color="item.color" class="text-body size-9 rounded-md" />
             <span class="min-w-0 flex-1">
               <span class="text-data block truncate font-medium">{{ item.name }}</span>
               <span class="text-muted-foreground text-meta block">

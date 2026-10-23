@@ -3,8 +3,7 @@
   "globalDependencies": ["tsconfig.base.json"],
   "tasks": {
     "build": {
-      "outputs": ["dist/**"],
-      "env": ["TAURI_ENV_*"]
+      "outputs": ["dist/**"]
     },
     "dev": {
       "cache": false,

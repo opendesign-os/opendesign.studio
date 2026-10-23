@@ -1,4 +1,3 @@
-import type { ProviderKind, Task } from '@opendesign/models'
 import * as seed from './seed'
 
 export const store = {
@@ -28,20 +27,9 @@ export function reject(message: string) {
   return Promise.reject(new Error(message))
 }
 
-export function model(kind: ProviderKind) {
-  return store.providers.find((item) => item.kind === kind)?.active ?? ''
-}
-
-export function enqueue(task: Omit<Task, 'id' | 'progress' | 'elapsed' | 'status'>) {
-  const created: Task = {
-    ...task,
-    id: `t-${Date.now()}`,
-    status: 'queued',
-    progress: 0,
-    elapsed: 0,
-  }
-  store.tasks.unshift(created)
-  return created
+export function remove<T extends { id: string }>(list: T[], id: string) {
+  const index = list.findIndex((item) => item.id === id)
+  return index < 0 ? undefined : list.splice(index, 1)[0]
 }
 
 export function sync(episodeId: string) {

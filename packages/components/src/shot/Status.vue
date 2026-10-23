@@ -2,13 +2,13 @@
 import type { ShotStatus } from '@opendesign/models'
 import { shotStatusLabel } from '@opendesign/models'
 import { Badge } from '@opendesign/shadcn'
-import { statusTone } from '../tone'
+import { tones } from '../tone'
 
 defineProps<{ status: ShotStatus }>()
 </script>
 
 <template>
-  <Badge :variant="statusTone[status]">
+  <Badge :variant="tones.shot[status]">
     <span class="size-1.5 rounded-full bg-current" />
     {{ shotStatusLabel[status] }}
   </Badge>

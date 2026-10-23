@@ -19,12 +19,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   seek: [time: number]
   select: [id: string]
-  move: [id: string, start: number]
-  trim: [id: string, start: number, span: number]
+  retime: [id: string, start: number, duration: number]
   mark: [id: string]
   zoom: [scale: number]
-  toggleHidden: [id: string]
-  toggleLocked: [id: string]
+  toggle: [id: string, flag: 'hidden' | 'locked']
 }>()
 
 type Mode = 'move' | 'start' | 'end'
@@ -128,7 +126,7 @@ function nearest(value: number, points: number[]) {
   return best
 }
 
-function keepPlayhead() {
+function settle() {
   settling = true
   setTimeout(() => {
     settling = false
@@ -212,15 +210,14 @@ function onRelease() {
   drag.value = null
   if (!current) return
 
-  keepPlayhead()
+  settle()
 
   if (!current.moved) {
     emit('select', current.id)
     return
   }
 
-  if (current.mode === 'move') emit('move', current.id, current.start)
-  else emit('trim', current.id, current.start, current.span)
+  emit('retime', current.id, current.start, current.span)
 }
 
 function scrub(event: PointerEvent) {
@@ -294,7 +291,7 @@ onUnmounted(() => window.removeEventListener('pointermove', onMove))
                   track.hidden ? 'flex' : 'hidden group-hover/track:flex',
                 )
               "
-              @click="emit('toggleHidden', track.id)"
+              @click="emit('toggle', track.id, 'hidden')"
             >
               <EyeOff v-if="track.hidden" class="size-3" />
               <Eye v-else class="size-3" />
@@ -309,7 +306,7 @@ onUnmounted(() => window.removeEventListener('pointermove', onMove))
                   track.locked ? 'flex' : 'hidden group-hover/track:flex',
                 )
               "
-              @click="emit('toggleLocked', track.id)"
+              @click="emit('toggle', track.id, 'locked')"
             >
               <Lock v-if="track.locked" class="size-3" />
               <LockOpen v-else class="size-3" />

@@ -102,12 +102,3 @@ export const slotLabel: Record<Slot, string> = {
   first: '首帧',
   last: '尾帧',
 }
-
-export const pipeline: ShotStatus[] = [
-  'draft',
-  'keyframe',
-  'generating',
-  'review',
-  'voiced',
-  'composed',
-]

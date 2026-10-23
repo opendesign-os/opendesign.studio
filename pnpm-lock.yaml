@@ -167,15 +167,33 @@ catalogs:
     '@biomejs/biome':
       specifier: ^2.6.2
       version: 2.6.2
+    '@lucide/vue':
+      specifier: ^1.61.0
+      version: 1.61.0
+    '@tanstack/vue-query':
+      specifier: ^5.104.5
+      version: 5.104.5
     '@types/node':
       specifier: ^26.6.5
       version: 26.6.5
+    '@vueuse/core':
+      specifier: ^15.0.0
+      version: 15.0.0
     turbo:
       specifier: ^2.11.10
       version: 2.11.10
     typescript:
       specifier: ^6.0.3
       version: 6.0.3
+    vue:
+      specifier: ^3.5.44
+      version: 3.5.44
+    vue-tsc:
+      specifier: ^3.3.13
+      version: 3.3.13
+    zod:
+      specifier: ^4.6.7
+      version: 4.6.7
 
 importers:
 
@@ -206,7 +224,7 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@lucide/vue':
-        specifier: ^1.61.0
+        specifier: 'catalog:'
         version: 1.61.0(vue@3.5.44(typescript@6.0.3))
       '@opendesign/common':
         specifier: workspace:*
@@ -227,13 +245,13 @@ importers:
         specifier: workspace:*
         version: link:../../packages/shadcn
       '@tanstack/vue-query':
-        specifier: ^5.104.5
+        specifier: 'catalog:'
         version: 5.104.5(vue@3.5.44(typescript@6.0.3))
       '@tanstack/vue-router':
         specifier: ^1.170.41
         version: 1.170.41(vue@3.5.44(typescript@6.0.3))
       '@vueuse/core':
-        specifier: ^15.0.0
+        specifier: 'catalog:'
         version: 15.0.0(vue@3.5.44(typescript@6.0.3))
       tailwindcss:
         specifier: ^4.3.3
@@ -242,10 +260,10 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       vue:
-        specifier: ^3.5.44
+        specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
       zod:
-        specifier: ^4.6.7
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       '@tailwindcss/typography':
@@ -270,14 +288,11 @@ importers:
         specifier: ^8.3.5
         version: 8.3.5(@types/node@26.6.5)(jiti@2.7.0)
       vue-tsc:
-        specifier: ^3.3.13
+        specifier: 'catalog:'
         version: 3.3.13(typescript@6.0.3)
 
   packages/common:
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -288,7 +303,7 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
       '@lucide/vue':
-        specifier: ^1.61.0
+        specifier: 'catalog:'
         version: 1.61.0(vue@3.5.44(typescript@6.0.3))
       '@opendesign/common':
         specifier: workspace:*
@@ -311,9 +326,6 @@ importers:
       '@tiptap/core':
         specifier: ^3.32.0
         version: 3.32.0(@tiptap/pm@3.32.0)
-      '@tiptap/extension-bubble-menu':
-        specifier: ^3.32.0
-        version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-drag-handle':
         specifier: ^3.32.0
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/extension-collaboration@3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(@tiptap/y-tiptap@3.0.10(prosemirror-model@1.25.12)(prosemirror-state@1.4.4)(prosemirror-view@1.42.7)(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33))(yjs@13.6.33))(@tiptap/extension-node-range@3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(@tiptap/y-tiptap@3.0.10(prosemirror-model@1.25.12)(prosemirror-state@1.4.4)(prosemirror-view@1.42.7)(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33))
@@ -369,20 +381,17 @@ importers:
         specifier: ^1.48.2
         version: 1.48.2(vue@3.5.44(typescript@6.0.3))
       '@vueuse/core':
-        specifier: ^15.0.0
+        specifier: 'catalog:'
         version: 15.0.0(vue@3.5.44(typescript@6.0.3))
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
       vue:
-        specifier: ^3.5.44
+        specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
       vue-tsc:
-        specifier: ^3.3.13
+        specifier: 'catalog:'
         version: 3.3.13(typescript@6.0.3)
 
   packages/composables:
@@ -391,17 +400,14 @@ importers:
         specifier: workspace:*
         version: link:../models
       '@vueuse/core':
-        specifier: ^15.0.0
+        specifier: 'catalog:'
         version: 15.0.0(vue@3.5.44(typescript@6.0.3))
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
       vue:
-        specifier: ^3.5.44
+        specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
 
   packages/models:
@@ -410,12 +416,9 @@ importers:
         specifier: workspace:*
         version: link:../common
       zod:
-        specifier: ^4.6.7
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -429,35 +432,23 @@ importers:
         specifier: workspace:*
         version: link:../models
       '@tanstack/vue-query':
-        specifier: ^5.104.5
+        specifier: 'catalog:'
         version: 5.104.5(vue@3.5.44(typescript@6.0.3))
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
       vue:
-        specifier: ^3.5.44
+        specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
-
-  packages/schemas:
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.5
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
 
   packages/shadcn:
     dependencies:
       '@lucide/vue':
-        specifier: ^1.61.0
+        specifier: 'catalog:'
         version: 1.61.0(vue@3.5.44(typescript@6.0.3))
       '@vueuse/core':
-        specifier: ^15.0.0
+        specifier: 'catalog:'
         version: 15.0.0(vue@3.5.44(typescript@6.0.3))
       class-variance-authority:
         specifier: ^0.7.1
@@ -472,17 +463,14 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
       vue:
-        specifier: ^3.5.44
+        specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
       vue-tsc:
-        specifier: ^3.3.13
+        specifier: 'catalog:'
         version: 3.3.13(typescript@6.0.3)
 
 packages:
@@ -2615,6 +2603,7 @@ snapshots:
       '@floating-ui/dom': 1.8.0
       '@tiptap/core': 3.32.0(@tiptap/pm@3.32.0)
       '@tiptap/pm': 3.32.0
+    optional: true
 
   '@tiptap/extension-bullet-list@3.32.0(@tiptap/extension-list@3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0))':
     dependencies:

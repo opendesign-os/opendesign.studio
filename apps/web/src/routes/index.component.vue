@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { LoaderCircle } from '@lucide/vue'
 import { resume } from '@opendesign/models'
-import { useAllEpisodes, useSeriesList } from '@opendesign/queries'
+import { useEpisodes, useSeriesList } from '@opendesign/queries'
 import { useRouter } from '@tanstack/vue-router'
 import { computed, watchEffect } from 'vue'
-import { recent } from '../recent'
+import { recent } from '../workspace'
 
 const router = useRouter()
 const { data: series } = useSeriesList()
-const { data: episodes } = useAllEpisodes()
+const { data: episodes } = useEpisodes()
 
 const target = computed(() => {
   const all = episodes.value ?? []

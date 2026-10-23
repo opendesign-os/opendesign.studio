@@ -6,7 +6,6 @@
 
 @plugin "@tailwindcss/typography";
 
-@source ".";
 @source "../../../packages/shadcn/src";
 @source "../../../packages/components/src";
 
@@ -29,9 +28,7 @@
   .page-hint {
     @apply text-muted-foreground text-body flex h-full flex-col items-center justify-center gap-3;
   }
-}
 
-@layer components {
   .prose {
     --tw-prose-body: var(--foreground);
     --tw-prose-headings: var(--foreground);

@@ -12,15 +12,14 @@ import {
   Table2,
   Workflow,
 } from '@lucide/vue'
-import { Modal, Tip } from '@opendesign/components'
+import { Avatar, Modal, Tip } from '@opendesign/components'
 import type { Task } from '@opendesign/models'
 import { live, ready, resume } from '@opendesign/models'
 import {
-  useAllEpisodes,
   useAssets,
   useCandidates,
-  useEpisode,
-  useRenderEpisode,
+  useCreateTask,
+  useEpisodes,
   useSeries,
   useShots,
   useTasks,
@@ -34,39 +33,35 @@ import {
   PopoverTrigger,
 } from '@opendesign/shadcn'
 import { useIsMutating } from '@tanstack/vue-query'
-import { Link, Outlet, useParams, useRouter, useRouterState } from '@tanstack/vue-router'
+import { Link, Outlet, useRouter, useRouterState } from '@tanstack/vue-router'
 import { computed, ref, watch } from 'vue'
-import { dialog } from '../dialog'
 import Assets from '../panels/Assets.vue'
 import Episodes from '../panels/Episodes.vue'
 import Home from '../panels/Home.vue'
 import Preferences from '../panels/Preferences.vue'
 import Series from '../panels/Series.vue'
 import Tasks from '../panels/Tasks.vue'
-import { recent } from '../recent'
+import { type Dialog, dialog, recent, useWorkspace } from '../workspace'
 
 const crumb =
   'hover:bg-accent data-[state=open]:bg-accent text-body flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-1 transition-colors duration-150'
 const link =
   'text-muted-foreground hover:text-foreground data-[status=active]:bg-background data-[status=active]:text-foreground dark:data-[status=active]:bg-input/40 inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-data font-medium whitespace-nowrap transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 data-[status=active]:shadow-xs [&_svg]:size-3.5 [&_svg]:shrink-0'
 
-const params = useParams({ from: '/episode/$id' })
 const router = useRouter()
 const leaf = useRouterState({ select: (state) => state.matches.at(-1)?.fullPath })
 
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
-const seriesId = computed(() => episode.value?.seriesId ?? '')
+const { episodeId, episode, seriesId } = useWorkspace()
 const { data: series } = useSeries(seriesId)
 const { data: shots } = useShots(episodeId)
 const { data: assets } = useAssets(seriesId)
 const { data: candidates } = useCandidates(episodeId)
-const { data: everything } = useAllEpisodes()
+const { data: episodes } = useEpisodes()
 const { data: tasks } = useTasks()
-const render = useRenderEpisode()
+const render = useCreateTask()
 const saving = useIsMutating({ mutationKey: ['patch'] })
 const saved = ref<Date | null>(null)
-const menu = ref<string | null>(null)
+const menu = ref<'series' | 'episode' | 'tasks' | null>(null)
 
 const rows = computed(() => shots.value ?? [])
 const runnable = computed(() => rows.value.filter((shot) => ready(shot, assets.value ?? [])).length)
@@ -109,17 +104,17 @@ watch(
   { immediate: true },
 )
 
-function toggle(name: string, open: boolean) {
+function toggle(name: NonNullable<typeof menu.value>, open: boolean) {
   menu.value = open ? name : null
 }
 
-function show(name: string) {
+function show(name: Dialog) {
   menu.value = null
   dialog.value = name
 }
 
 function open(id: string) {
-  const target = everything.value?.find((item) => item.id === id)
+  const target = episodes.value?.find((item) => item.id === id)
   const view = views.value.find((item) => item.to === leaf.value)?.to ?? '/episode/$id'
   menu.value = null
   dialog.value = null
@@ -130,7 +125,7 @@ function open(id: string) {
 }
 
 function enter(id: string) {
-  const target = resume((everything.value ?? []).filter((item) => item.seriesId === id))
+  const target = resume((episodes.value ?? []).filter((item) => item.seriesId === id))
   if (target) open(target.id)
 }
 
@@ -161,7 +156,7 @@ function jump(task: Task) {
           <button
             type="button"
             class="bg-foreground text-background text-meta flex size-6 shrink-0 items-center justify-center rounded-md font-bold"
-            @click="dialog = 'home'"
+            @click="show('home')"
           >
             镜
           </button>
@@ -171,12 +166,11 @@ function jump(task: Task) {
         <Popover :open="menu === 'series'" @update:open="toggle('series', $event)">
           <PopoverTrigger as-child>
             <button type="button" :class="cn(crumb, 'max-w-48 shrink-0')">
-              <span
-                class="flex size-4.5 shrink-0 items-center justify-center rounded text-[10px] font-semibold text-white"
-                :style="{ backgroundColor: series?.color }"
-              >
-                {{ series?.title.slice(0, 1) }}
-              </span>
+              <Avatar
+                :name="series?.title"
+                :color="series?.color"
+                class="size-4.5 rounded text-[10px]"
+              />
               <span class="truncate">{{ series?.title ?? '…' }}</span>
               <ChevronsUpDown class="text-muted-foreground size-3 shrink-0" />
             </button>
@@ -255,7 +249,7 @@ function jump(task: Task) {
             size="sm"
             class="ml-1.5"
             :disabled="render.isPending.value || !rows.length"
-            @click="render.mutate(episodeId)"
+            @click="render.mutate({ kind: 'compose', episodeId })"
           >
             <Send />
             {{ render.isPending.value ? '提交中…' : '提交出片' }}

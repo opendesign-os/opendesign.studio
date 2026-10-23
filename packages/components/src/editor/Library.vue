@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Check, Lock } from '@lucide/vue'
 import type { Asset } from '@opendesign/models'
-import { assetKindLabel, assetKinds, locked } from '@opendesign/models'
+import { assetKind, assetKindLabel, locked } from '@opendesign/models'
 import { cn } from '@opendesign/shadcn'
 import { computed } from 'vue'
 
@@ -9,7 +9,7 @@ const props = defineProps<{ assets: Asset[]; cast: string[] }>()
 const emit = defineEmits<{ toggle: [id: string] }>()
 
 const groups = computed(() =>
-  assetKinds
+  assetKind.options
     .map((kind) => ({ kind, items: props.assets.filter((item) => item.kind === kind) }))
     .filter((group) => group.items.length > 0),
 )

@@ -4,7 +4,7 @@ import { Link } from '@tanstack/vue-router'
 </script>
 
 <template>
-  <div class="page-hint text-muted-foreground">
+  <div class="page-hint">
     <Compass class="size-6" />
     <p>页面不存在</p>
     <Link to="/" class="text-primary hover:underline">回到首页</Link>

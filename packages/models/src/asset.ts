@@ -55,8 +55,6 @@ export const assetKindLabel: Record<AssetKind, string> = {
   costume: '服装',
 }
 
-export const assetKinds: AssetKind[] = ['character', 'scene', 'prop', 'costume']
-
 export const roleLabel: Record<Role, string> = {
   lead: '主角',
   support: '配角',
@@ -77,8 +75,6 @@ export const viewLabel: Record<View, string> = {
   back: '背面',
   closeup: '特写',
 }
-
-export const views: View[] = ['front', 'side', 'back', 'closeup']
 
 export function locked(item: Asset) {
   return item.references.some((entry) => entry.locked)

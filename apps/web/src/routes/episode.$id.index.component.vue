@@ -1,25 +1,24 @@
 <script setup lang="ts">
 import { LayoutGrid, List, Search } from '@lucide/vue'
-import { Board, fills, ShotTable, statusTone, Tip } from '@opendesign/components'
-import { pipeline, ready, shotStatusLabel } from '@opendesign/models'
-import { useAssets, useEpisode, useShots } from '@opendesign/queries'
+import { Board, fills, ShotTable, Tip, tones } from '@opendesign/components'
+import { ready, shotStatus, shotStatusLabel } from '@opendesign/models'
+import { useAssets, useShots } from '@opendesign/queries'
 import { cn, Input, Skeleton, ToggleGroup, ToggleGroupItem } from '@opendesign/shadcn'
-import { useParams, useRouter } from '@tanstack/vue-router'
+import { useRouter } from '@tanstack/vue-router'
 import { useLocalStorage } from '@vueuse/core'
 import { computed, ref } from 'vue'
+import { useWorkspace } from '../workspace'
 
 const chip =
   'text-muted-foreground hover:text-foreground data-[state=on]:bg-accent data-[state=on]:text-foreground h-7 shrink-0 gap-1.5 rounded-md px-2.5 text-meta font-medium shadow-none'
 const mode =
   'text-muted-foreground aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-xs size-7 min-w-0 rounded-md px-0 hover:bg-transparent'
 
-const params = useParams({ from: '/episode/$id/' })
 const router = useRouter()
 
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
+const { episodeId, seriesId } = useWorkspace()
 const { data: shots, isPending } = useShots(episodeId)
-const { data: assets } = useAssets(computed(() => episode.value?.seriesId ?? ''))
+const { data: assets } = useAssets(seriesId)
 
 const query = ref('')
 const status = ref('all')
@@ -33,12 +32,12 @@ const filters = computed(() => {
   for (const shot of rows.value) counts.set(shot.status, (counts.get(shot.status) ?? 0) + 1)
   return [
     { id: 'all', label: '全部', count: rows.value.length, dot: '' },
-    ...[...pipeline, 'failed' as const]
+    ...shotStatus.options
       .map((item) => ({
         id: item,
         label: shotStatusLabel[item],
         count: counts.get(item) ?? 0,
-        dot: fills[statusTone[item]],
+        dot: fills[tones.shot[item]],
       }))
       .filter((item) => item.count || item.id === status.value),
   ]
@@ -64,7 +63,7 @@ const summary = computed(() => ({
   ready: rows.value.filter((shot) => ready(shot, library.value)).length,
 }))
 
-function pick(value: unknown) {
+function filter(value: unknown) {
   status.value = typeof value === 'string' && value ? value : 'all'
 }
 
@@ -88,7 +87,7 @@ function open(id: string) {
         type="single"
         class="min-w-0 gap-0.5 overflow-x-auto"
         :model-value="status"
-        @update:model-value="pick"
+        @update:model-value="filter"
       >
         <ToggleGroupItem v-for="item in filters" :key="item.id" :value="item.id" :class="chip">
           <span v-if="item.dot" :class="cn('size-1.5 rounded-full', item.dot)" />

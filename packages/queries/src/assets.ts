@@ -1,7 +1,7 @@
-import type { Asset, AssetDraft, AssetPatch, View } from '@opendesign/models'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import type { AssetDraft } from '@opendesign/models'
+import { useMutation, useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
-import { keys } from './keys'
+import { keys, useInvalidate, usePatch } from './cache'
 import * as mock from './mock'
 
 export function useAssets(seriesId: MaybeRefOrGetter<string>) {
@@ -11,45 +11,28 @@ export function useAssets(seriesId: MaybeRefOrGetter<string>) {
   })
 }
 
-function useRefresh() {
-  const client = useQueryClient()
-  return (asset?: Asset) => {
-    void client.invalidateQueries({ queryKey: asset ? keys.assets(asset.seriesId) : ['assets'] })
-    void client.invalidateQueries({ queryKey: keys.overview })
-  }
-}
-
 export function useCreateAsset() {
-  const refresh = useRefresh()
+  const invalidate = useInvalidate()
   return useMutation({
     mutationFn: ({ seriesId, draft }: { seriesId: string; draft: AssetDraft }) =>
       mock.createAsset(seriesId, draft),
-    onSuccess: refresh,
+    onSuccess: (asset) => invalidate(keys.assets(asset.seriesId), keys.overview),
   })
 }
 
 export function usePatchAsset() {
-  const refresh = useRefresh()
-  return useMutation({
-    mutationKey: ['patch', 'asset'],
-    mutationFn: ({ id, patch }: { id: string; patch: AssetPatch }) => mock.patchAsset(id, patch),
-    onSuccess: refresh,
+  return usePatch({
+    name: 'asset',
+    scopes: [keys.assets()],
+    request: mock.patchAsset,
+    affects: () => [keys.overview],
   })
 }
 
 export function useRemoveAsset() {
-  const refresh = useRefresh()
-  return useMutation({ mutationFn: mock.removeAsset, onSuccess: () => refresh() })
-}
-
-export function useGenerateReference() {
-  const client = useQueryClient()
-  const refresh = useRefresh()
+  const invalidate = useInvalidate()
   return useMutation({
-    mutationFn: ({ id, view }: { id: string; view: View }) => mock.generateReference(id, view),
-    onSuccess: (asset) => {
-      refresh(asset)
-      void client.invalidateQueries({ queryKey: keys.tasks })
-    },
+    mutationFn: mock.removeAsset,
+    onSuccess: (asset) => invalidate(keys.assets(asset.seriesId), keys.shots(), keys.overview),
   })
 }

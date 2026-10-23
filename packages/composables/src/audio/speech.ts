@@ -24,7 +24,7 @@ const MALE = /male|男|yunxi|yunyang|yunjian|yunze|kangkang|zhiwei|wanlung/i
 const CHARS_PER_SECOND = 4.5
 
 function supported() {
-  return typeof window !== 'undefined' && 'speechSynthesis' in window
+  return 'speechSynthesis' in window
 }
 
 function pick(female: boolean) {

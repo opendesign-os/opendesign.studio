@@ -2,8 +2,6 @@ import { tenth } from '@opendesign/common'
 import { interpolate } from './motion'
 import type { Shot } from './schema'
 
-export const MIN_DURATION = 0.5
-
 export type Placement = {
   shot: Shot
   start: number

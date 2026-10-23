@@ -62,49 +62,45 @@ import {
   Soundboard,
   Stage,
   Status,
-  statusTone,
   Timeline,
   Timing,
   Tip,
   type Track,
   Transport,
+  tones,
 } from '@opendesign/components'
 import { type Cue, useHistory, useMixer, useTheme } from '@opendesign/composables'
 import type {
   Aspect,
-  Bubble,
   BubbleShape,
   Camera,
-  Effect,
   EffectStyle,
   FoleyKind,
   Frame,
   Placement,
+  Shot,
   ShotDraft,
   ShotPatch,
   ShotStatus,
   Slot,
-  Sound,
 } from '@opendesign/models'
 import {
   foley,
   formats,
   locate,
+  MAX_DURATION,
   MIN_DURATION,
   moves,
+  onomatopoeia,
   readiness,
   sequence,
   transitionLabel,
 } from '@opendesign/models'
 import {
   useAssets,
-  useEpisode,
-  useGenerateKeyframe,
-  useGenerateVideo,
-  useGenerateVoice,
+  useCreateTask,
   usePatchSeries,
   usePatchShot,
-  useRenderEpisode,
   useSeries,
   useShots,
   useSplitShot,
@@ -124,7 +120,7 @@ import {
   TabsTrigger,
   Toggle,
 } from '@opendesign/shadcn'
-import { useParams, useRouter, useSearch } from '@tanstack/vue-router'
+import { useRouter, useSearch } from '@tanstack/vue-router'
 import {
   useElementSize,
   useEventListener,
@@ -134,10 +130,11 @@ import {
   useTimeoutFn,
 } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
-import { dialog } from '../dialog'
+import { dialog, useWorkspace } from '../workspace'
 
 type Key = 'bubbles' | 'effects' | 'dialogue' | 'sounds'
 type Owner = { placement: Placement; key: Key | null; start: number; end: number }
+type Spot = { value: Shot; at: number; room: number }
 
 const FRAME = 1 / 30
 
@@ -147,14 +144,11 @@ const slide =
 const ZOOM = { min: 8, max: 240 }
 const GUTTER = 96
 
-const params = useParams({ from: '/episode/$id/edit' })
 const search = useSearch({ from: '/episode/$id/edit' })
 const router = useRouter()
 const { dark } = useTheme()
 
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
-const seriesId = computed(() => episode.value?.seriesId ?? '')
+const { episodeId, seriesId } = useWorkspace()
 const { data: series } = useSeries(seriesId)
 const { data: assets } = useAssets(seriesId)
 const { data: list } = useShots(episodeId)
@@ -162,11 +156,8 @@ const shotId = computed(() => search.value.shot ?? list.value?.[0]?.id ?? '')
 
 const patch = usePatchShot()
 const patchSeries = usePatchSeries()
-const splitShot = useSplitShot()
-const makeKeyframe = useGenerateKeyframe()
-const makeVideo = useGenerateVideo()
-const makeVoice = useGenerateVoice()
-const render = useRenderEpisode()
+const split = useSplitShot()
+const generate = useCreateTask()
 
 const time = ref(0)
 const playing = ref(false)
@@ -201,7 +192,6 @@ const local = computed(() => (current.value ? time.value - current.value.start :
 const size = computed(() => (series.value ? formats[series.value.aspect] : null))
 const roster = computed(() => new Map(library.value.map((item) => [item.id, item])))
 const checks = computed(() => (shot.value ? readiness(shot.value, library.value) : []))
-const busy = computed(() => makeKeyframe.isPending.value || makeVideo.isPending.value)
 
 const staged = computed(() => {
   const value = current.value?.shot
@@ -304,7 +294,7 @@ const tracks = computed<Track[]>(() => {
         start,
         duration: value.duration,
         cover: cover(value, dark.value),
-        tone: statusTone[value.status],
+        tone: tones.shot[value.status],
         audio: [...value.dialogue, ...value.sounds].map((part) => ({
           start: part.start,
           duration: part.duration,
@@ -456,14 +446,10 @@ const reviews = computed(() => (shot.value ? flow[shot.value.status] : []))
 const moving = computed(() => (shot.value ? shot.value.move.kind !== 'static' : false))
 const parallax = computed(() => shot.value?.layers.some((item) => item.depth < 1) ?? false)
 
-const history = useHistory(
-  (id) => list.value?.find((item) => item.id === id),
-  (id, next) => patch.mutate({ id, patch: next }),
-)
-
-function write(id: string, next: ShotPatch) {
-  history.record(id, next)
-}
+const history = useHistory<ShotPatch>({
+  read: (id) => list.value?.find((item) => item.id === id),
+  apply: (id, next) => patch.mutate({ id, patch: next }),
+})
 
 function open(id: string) {
   if (id === shotId.value) return
@@ -503,23 +489,21 @@ function enter(id: string) {
   open(id)
 }
 
-function retime(id: string, start: number, span?: number) {
+function retime(id: string, start: number, span: number) {
   const owner = owners.value.get(id)
   if (!owner) return
   const { placement: home, key } = owner
   const value = home.shot
   if (!key) {
-    if (span !== undefined) {
-      write(value.id, { duration: tenth(Math.min(30, Math.max(MIN_DURATION, span))) })
-    }
+    history.record(value.id, {
+      duration: tenth(Math.min(MAX_DURATION, Math.max(MIN_DURATION, span))),
+    })
     return
   }
   const items = value[key] as { id: string; start: number; duration: number }[]
-  const item = items.find((part) => part.id === id)
-  if (!item) return
-  const length = Math.max(0.1, Math.min(tenth(span ?? item.duration), value.duration))
+  const length = Math.max(0.1, Math.min(tenth(span), value.duration))
   const at = Math.min(Math.max(0, tenth(start - home.start)), tenth(value.duration - length))
-  write(value.id, {
+  history.record(value.id, {
     [key]: items.map((part) => (part.id === id ? { ...part, start: at, duration: length } : part)),
   } as ShotPatch)
 }
@@ -529,7 +513,7 @@ function shift(id: string, x: number, y: number) {
   if (!owner || (owner.key !== 'bubbles' && owner.key !== 'effects')) return
   const value = owner.placement.shot
   const items = value[owner.key] as { id: string; x: number; y: number }[]
-  write(value.id, {
+  history.record(value.id, {
     [owner.key]: items.map((part) => (part.id === id ? { ...part, x, y } : part)),
   } as ShotPatch)
 }
@@ -539,11 +523,11 @@ function remove(id: string) {
   if (!owner?.key) return
   const value = owner.placement.shot
   const items = value[owner.key] as { id: string }[]
-  write(value.id, { [owner.key]: items.filter((part) => part.id !== id) } as ShotPatch)
+  history.record(value.id, { [owner.key]: items.filter((part) => part.id !== id) } as ShotPatch)
   if (selected.value === id) selected.value = null
 }
 
-function cursor() {
+function cursor(): Spot | null {
   const value = shot.value
   const home = placement.value
   if (!value || !home) return null
@@ -551,73 +535,52 @@ function cursor() {
   return { value, at, room: tenth(value.duration - at) }
 }
 
-function stamp() {
-  return Date.now().toString(36)
-}
-
-function addBubble(shape: string) {
+function insert<K extends Key>(key: K, build: (spot: Spot) => Omit<Shot[K][number], 'id'>) {
   const spot = cursor()
   if (!spot) return
-  const { value, at, room } = spot
-  const speaker =
-    value.cast.find((id) => library.value.find((item) => item.id === id)?.kind === 'character') ??
-    library.value.find((item) => item.kind === 'character')?.id ??
-    ''
-  const bubble: Bubble = {
-    id: `${value.id}-b${stamp()}`,
-    assetId: speaker,
+  const id = `${spot.value.id}-${key}-${Date.now().toString(36)}`
+  history.record(spot.value.id, {
+    [key]: [...spot.value[key], { ...build(spot), id }],
+  } as ShotPatch)
+  selected.value = id
+  tab.value = 'element'
+}
+
+function addBubble(shape: BubbleShape) {
+  insert('bubbles', ({ value, at, room }) => ({
+    assetId:
+      value.cast.find((id) => roster.value.get(id)?.kind === 'character') ??
+      library.value.find((item) => item.kind === 'character')?.id ??
+      '',
     text: shape === 'caption' ? '旁白' : '新台词',
     x: 50,
     y: shape === 'caption' ? 86 : 28,
-    shape: shape as BubbleShape,
+    shape,
     start: at,
     duration: Math.min(2, room),
-  }
-  write(value.id, { bubbles: [...value.bubbles, bubble] })
-  selected.value = bubble.id
-  tab.value = 'element'
+  }))
 }
 
-const samples: Record<EffectStyle, string> = {
-  impact: '咚！',
-  soft: '沙沙',
-  speed: '嗖——',
-  glow: '叮',
-}
-
-function addEffect(style: string) {
-  const spot = cursor()
-  if (!spot) return
-  const { value, at, room } = spot
-  const effect: Effect = {
-    id: `${value.id}-e${stamp()}`,
-    text: samples[style as EffectStyle],
+function addEffect(style: EffectStyle) {
+  insert('effects', ({ at, room }) => ({
+    text: onomatopoeia[style],
     x: 64,
     y: 40,
-    style: style as EffectStyle,
+    style,
     start: at,
     duration: Math.min(1.2, room),
-  }
-  write(value.id, { effects: [...value.effects, effect] })
-  selected.value = effect.id
-  tab.value = 'element'
+  }))
 }
 
 function addSound(kind: FoleyKind) {
-  const spot = cursor()
   const preset = foley.find((item) => item.kind === kind)
-  if (!spot || !preset) return
-  const { value, at, room } = spot
-  const sound: Sound = {
-    id: `${value.id}-s${stamp()}`,
+  if (!preset) return
+  insert('sounds', ({ at, room }) => ({
     kind,
     name: preset.name,
     start: at,
     duration: Math.min(preset.duration, room),
-  }
-  write(value.id, { sounds: [...value.sounds, sound] })
-  selected.value = sound.id
-  tab.value = 'element'
+  }))
 }
 
 function listen(id: string) {
@@ -637,18 +600,18 @@ function toggleCast(assetId: string) {
   const cast = value.cast.includes(assetId)
     ? value.cast.filter((item) => item !== assetId)
     : [...value.cast, assetId]
-  write(value.id, { cast })
+  history.record(value.id, { cast })
 }
 
 function apply(kind: Camera) {
   const value = shot.value
-  if (value) write(value.id, { move: { ...value.move, kind, ...moves[kind] } })
+  if (value) history.record(value.id, { move: { ...value.move, kind, ...moves[kind] } })
 }
 
 function setFrame(slot: Slot, frame: Frame) {
   const value = shot.value
   if (!value) return
-  write(value.id, {
+  history.record(value.id, {
     move: slot === 'first' ? { ...value.move, from: frame } : { ...value.move, to: frame },
   })
 }
@@ -661,7 +624,7 @@ function setParallax(enabled: boolean) {
   const value = shot.value
   if (!value) return
   const depths = { back: 0.45, mid: 0.75, fore: 1 }
-  write(value.id, {
+  history.record(value.id, {
     layers: value.layers.map((item) => ({ ...item, depth: enabled ? depths[item.plane] : 1 })),
   })
 }
@@ -670,7 +633,7 @@ function cut() {
   const value = current.value
   if (!value || !splittable.value) return
   playing.value = false
-  splitShot.mutate(
+  split.mutate(
     { id: value.shot.id, at: tenth(time.value - value.start) },
     {
       onSuccess: (created) => {
@@ -706,8 +669,11 @@ function preview() {
   playing.value = true
 }
 
-function flip(items: string[], id: string) {
-  return items.includes(id) ? items.filter((item) => item !== id) : [...items, id]
+function toggle(id: string, flag: 'hidden' | 'locked') {
+  const flags = flag === 'hidden' ? hidden : locked
+  flags.value = flags.value.includes(id)
+    ? flags.value.filter((item) => item !== id)
+    : [...flags.value, id]
 }
 
 const settle = useTimeoutFn(() => (easing.value = false), 320, { immediate: false })
@@ -791,58 +757,97 @@ watch(panel, () => {
 })
 
 const actions = computed<Action[]>(() => [
-  { id: 'play', group: '播放', label: playing.value ? '暂停' : '播放', hint: '空格', icon: Play },
-  { id: 'preview', group: '播放', label: '从头预览', icon: Eye },
-  { id: 'split', group: '播放', label: '在播放头分割镜头', hint: 'S', icon: Scissors },
+  {
+    id: 'play',
+    group: '播放',
+    label: playing.value ? '暂停' : '播放',
+    hint: '空格',
+    icon: Play,
+    run: () => (playing.value = !playing.value),
+  },
+  { id: 'preview', group: '播放', label: '从头预览', icon: Eye, run: preview },
+  { id: 'split', group: '播放', label: '在播放头分割镜头', hint: 'S', icon: Scissors, run: cut },
   {
     id: 'fullscreen',
     group: '播放',
     label: isFullscreen.value ? '退出全屏' : '全屏预览',
     hint: 'F',
     icon: isFullscreen.value ? Shrink : Expand,
+    run: () => void toggleScreen(),
   },
-  { id: 'fit', group: '播放', label: '时间轴适应宽度', icon: Maximize },
+  { id: 'fit', group: '播放', label: '时间轴适应宽度', icon: Maximize, run: fit },
   {
     id: 'captions',
     group: '播放',
     label: captions.value ? '隐藏字幕' : '显示字幕',
     icon: Captions,
+    run: () => (captions.value = !captions.value),
   },
-  { id: 'gen:first', group: '生成', label: '生成首帧', icon: Sparkles },
-  { id: 'gen:last', group: '生成', label: '生成尾帧', icon: Sparkles },
-  { id: 'gen:video', group: '生成', label: '生成视频', icon: Clapperboard },
-  { id: 'gen:voice', group: '生成', label: '生成配音', icon: Mic },
-  { id: 'render', group: '生成', label: '整集提交出片', icon: Send },
-  { id: 'undo', group: '编辑', label: '撤销', hint: 'Ctrl/⌘ Z', icon: Undo2 },
-  { id: 'redo', group: '编辑', label: '重做', hint: 'Ctrl/⌘ Shift Z', icon: Redo2 },
-  { id: 'delete', group: '编辑', label: '删除选中元素', hint: 'Delete', icon: Trash2 },
-  { id: 'prev', group: '导航', label: '上一镜', hint: '↑', icon: ChevronLeft },
-  { id: 'next', group: '导航', label: '下一镜', hint: '↓', icon: ChevronRight },
-  { id: 'board', group: '导航', label: '回到分镜表', icon: LayersIcon },
-  { id: 'assets', group: '导航', label: '打开资产库', icon: Users },
+  {
+    id: 'first',
+    group: '生成',
+    label: '生成首帧',
+    icon: Sparkles,
+    run: () =>
+      shot.value && generate.mutate({ kind: 'keyframe', shotId: shot.value.id, slot: 'first' }),
+  },
+  {
+    id: 'last',
+    group: '生成',
+    label: '生成尾帧',
+    icon: Sparkles,
+    run: () =>
+      shot.value && generate.mutate({ kind: 'keyframe', shotId: shot.value.id, slot: 'last' }),
+  },
+  {
+    id: 'video',
+    group: '生成',
+    label: '生成视频',
+    icon: Clapperboard,
+    run: () => shot.value && generate.mutate({ kind: 'video', shotId: shot.value.id }),
+  },
+  {
+    id: 'voice',
+    group: '生成',
+    label: '生成配音',
+    icon: Mic,
+    run: () => shot.value && generate.mutate({ kind: 'voice', shotId: shot.value.id }),
+  },
+  {
+    id: 'compose',
+    group: '生成',
+    label: '整集提交出片',
+    icon: Send,
+    run: () => generate.mutate({ kind: 'compose', episodeId: episodeId.value }),
+  },
+  { id: 'undo', group: '编辑', label: '撤销', hint: 'Ctrl/⌘ Z', icon: Undo2, run: history.undo },
+  {
+    id: 'redo',
+    group: '编辑',
+    label: '重做',
+    hint: 'Ctrl/⌘ Shift Z',
+    icon: Redo2,
+    run: history.redo,
+  },
+  {
+    id: 'delete',
+    group: '编辑',
+    label: '删除选中元素',
+    hint: 'Delete',
+    icon: Trash2,
+    run: () => selected.value && remove(selected.value),
+  },
+  { id: 'prev', group: '导航', label: '上一镜', hint: '↑', icon: ChevronLeft, run: () => skip(-1) },
+  { id: 'next', group: '导航', label: '下一镜', hint: '↓', icon: ChevronRight, run: () => skip(1) },
+  { id: 'board', group: '导航', label: '回到分镜表', icon: LayersIcon, run: back },
+  {
+    id: 'assets',
+    group: '导航',
+    label: '打开资产库',
+    icon: Users,
+    run: () => (dialog.value = 'assets'),
+  },
 ])
-
-function run(id: string) {
-  const value = shot.value
-  if (id === 'play') playing.value = !playing.value
-  if (id === 'preview') preview()
-  if (id === 'split') cut()
-  if (id === 'fit') fit()
-  if (id === 'fullscreen') void toggleScreen()
-  if (id === 'gen:first' && value) makeKeyframe.mutate({ id: value.id, slot: 'first' })
-  if (id === 'gen:last' && value) makeKeyframe.mutate({ id: value.id, slot: 'last' })
-  if (id === 'gen:video' && value) makeVideo.mutate(value.id)
-  if (id === 'gen:voice' && value) makeVoice.mutate(value.id)
-  if (id === 'captions') captions.value = !captions.value
-  if (id === 'render' && episodeId.value) render.mutate(episodeId.value)
-  if (id === 'undo') history.undo()
-  if (id === 'redo') history.redo()
-  if (id === 'delete' && selected.value) remove(selected.value)
-  if (id === 'prev') skip(-1)
-  if (id === 'next') skip(1)
-  if (id === 'board') back()
-  if (id === 'assets') dialog.value = 'assets'
-}
 
 useEventListener(window, 'keydown', (event: KeyboardEvent) => {
   const mod = event.metaKey || event.ctrlKey
@@ -964,7 +969,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                 v-else-if="panel === 'shots'"
                 :placements="found.shots"
                 :current="shotId"
-                @pick="enter"
+                @select="enter"
               />
               <Library
                 v-else-if="panel === 'assets'"
@@ -981,7 +986,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                 @add="addSound"
                 @preview="audition"
                 @listen="listen"
-                @pick="choose"
+                @select="choose"
               />
               <Lettering
                 v-else-if="panel === 'text'"
@@ -989,7 +994,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                 :items="shot?.bubbles ?? []"
                 :selected="selected"
                 @add="addBubble"
-                @pick="choose"
+                @select="choose"
               />
               <Lettering
                 v-else-if="panel === 'effect'"
@@ -997,7 +1002,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                 :items="shot?.effects ?? []"
                 :selected="selected"
                 @add="addEffect"
-                @pick="choose"
+                @select="choose"
               />
               <Presets v-else-if="shot" :move="shot.move" @apply="apply" />
             </div>
@@ -1154,27 +1159,26 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                     :key="JSON.stringify(draft)"
                     :value="draft"
                     :busy="patch.isPending.value"
-                    @submit="write(shot.id, $event)"
+                    @submit="history.record(shot.id, $event)"
                   />
                 </Section>
                 <Section title="时长与转场" :icon="Timer">
                   <Timing
                     :duration="shot.duration"
                     :transition="shot.transition"
-                    @duration="write(shot.id, { duration: $event })"
-                    @transition="write(shot.id, { transition: $event })"
+                    @change="history.record(shot.id, $event)"
                   />
                 </Section>
                 <Section
                   title="运镜"
                   :icon="Video"
                   :enabled="moving"
-                  @toggle="apply($event ? 'push' : 'static')"
+                  @update:enabled="apply($event ? 'push' : 'static')"
                 >
-                  <Motion :move="shot.move" @change="write(shot.id, { move: $event })" />
+                  <Motion :move="shot.move" @change="history.record(shot.id, { move: $event })" />
                 </Section>
-                <Section title="视差" :icon="LayersIcon" :enabled="parallax" @toggle="setParallax">
-                  <Layers :layers="shot.layers" @change="write(shot.id, { layers: $event })" />
+                <Section title="视差" :icon="LayersIcon" :enabled="parallax" @update:enabled="setParallax">
+                  <Layers :layers="shot.layers" @change="history.record(shot.id, { layers: $event })" />
                 </Section>
               </TabsContent>
 
@@ -1183,7 +1187,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                   :shot="shot"
                   :assets="library"
                   :selected="selected"
-                  @change="write(shot.id, $event)"
+                  @change="history.record(shot.id, $event)"
                   @select="(id) => (id ? choose(id) : (selected = null))"
                   @remove="remove"
                   @listen="listen"
@@ -1201,10 +1205,10 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                   <Pipeline
                     :shot="shot"
                     :assets="library"
-                    :busy="busy"
-                    @generate="makeKeyframe.mutate({ id: shot.id, slot: $event })"
-                    @video="makeVideo.mutate(shot.id)"
-                    @pick="dialog = 'assets'"
+                    :busy="generate.isPending.value"
+                    @generate="generate.mutate({ kind: 'keyframe', shotId: shot.id, slot: $event })"
+                    @video="generate.mutate({ kind: 'video', shotId: shot.id })"
+                    @select="dialog = 'assets'"
                   />
                 </Section>
                 <Section title="审核" :icon="Check">
@@ -1219,7 +1223,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                       size="xs"
                       :variant="action.next === 'draft' ? 'outline' : 'default'"
                       :disabled="patch.isPending.value"
-                      @click="write(shot.id, { status: action.next })"
+                      @click="history.record(shot.id, { status: action.next })"
                     >
                       {{ action.label }}
                     </Button>
@@ -1242,8 +1246,8 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                :disabled="!shot?.dialogue.length || makeVoice.isPending.value"
-                @click="shot && makeVoice.mutate(shot.id)"
+                :disabled="!shot?.dialogue.length || generate.isPending.value"
+                @click="shot && generate.mutate({ kind: 'voice', shotId: shot.id })"
               >
                 <Mic class="text-destructive" />
               </Button>
@@ -1312,17 +1316,15 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
             :selected="marked"
             @seek="seek"
             @select="choose"
-            @move="(id, start) => retime(id, start)"
-            @trim="(id, start, span) => retime(id, start, span)"
+            @retime="retime"
             @mark="enter"
             @zoom="zoom"
-            @toggle-hidden="hidden = flip(hidden, $event)"
-            @toggle-locked="locked = flip(locked, $event)"
+            @toggle="toggle"
           />
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
 
-    <Palette v-model:open="palette" :actions="actions" @run="run" />
+    <Palette v-model:open="palette" :actions="actions" />
   </div>
 </template>

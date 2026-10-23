@@ -12,14 +12,13 @@
   "dependencies": {
     "@opendesign/common": "workspace:*",
     "@opendesign/models": "workspace:*",
-    "@tanstack/vue-query": "^5.104.5"
+    "@tanstack/vue-query": "catalog:"
   },
   "peerDependencies": {
-    "vue": "^3.5.44"
+    "vue": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vue": "^3.5.44"
+    "vue": "catalog:"
   }
 }

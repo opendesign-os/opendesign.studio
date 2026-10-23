@@ -1,23 +1,22 @@
 <script setup lang="ts">
 import { tenth } from '@opendesign/common'
-import type { Transition } from '@opendesign/models'
-import { MIN_DURATION, transitionLabel } from '@opendesign/models'
+import type { ShotPatch, Transition } from '@opendesign/models'
+import { MAX_DURATION, MIN_DURATION, transitionLabel } from '@opendesign/models'
 import { Input, ToggleGroup, ToggleGroupItem } from '@opendesign/shadcn'
 
 defineProps<{ duration: number; transition: Transition }>()
 
-const emit = defineEmits<{
-  duration: [value: number]
-  transition: [value: Transition]
-}>()
+const emit = defineEmits<{ change: [patch: Pick<ShotPatch, 'duration' | 'transition'>] }>()
 
 function commit(raw: string) {
   const value = Number(raw)
-  if (!Number.isNaN(value)) emit('duration', tenth(Math.min(30, Math.max(MIN_DURATION, value))))
+  if (!Number.isNaN(value)) {
+    emit('change', { duration: tenth(Math.min(MAX_DURATION, Math.max(MIN_DURATION, value))) })
+  }
 }
 
 function pick(value: unknown) {
-  if (typeof value === 'string' && value) emit('transition', value as Transition)
+  if (typeof value === 'string' && value) emit('change', { transition: value as Transition })
 }
 </script>
 
@@ -30,7 +29,7 @@ function pick(value: unknown) {
         type="number"
         step="0.1"
         :min="MIN_DURATION"
-        max="30"
+        :max="MAX_DURATION"
         class="h-7 w-20 font-mono tabular-nums"
         @change="commit(($event.target as HTMLInputElement).value)"
       />

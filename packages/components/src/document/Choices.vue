@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { cn } from '@opendesign/shadcn'
 import { ref, useTemplateRef, watch } from 'vue'
+import Avatar from '../layout/Avatar.vue'
 import type { Choice } from './types'
 
 defineOptions({ inheritAttrs: false })
@@ -79,13 +80,12 @@ defineExpose({ keydown })
         >
           <component :is="item.icon" class="size-4" />
         </span>
-        <span
+        <Avatar
           v-else-if="item.color"
-          class="text-micro flex size-6 shrink-0 items-center justify-center rounded-full font-semibold text-white"
-          :style="{ backgroundColor: item.color }"
-        >
-          {{ item.label.slice(0, 1) }}
-        </span>
+          :name="item.label"
+          :color="item.color"
+          class="text-micro size-6"
+        />
         <span class="min-w-0 flex-1">
           <span class="block truncate">{{ item.label }}</span>
           <span v-if="item.hint" class="text-muted-foreground block truncate text-micro">{{ item.hint }}</span>

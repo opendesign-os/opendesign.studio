@@ -1,5 +1,5 @@
 import type { RelationDraft, RelationPatch } from '@opendesign/models'
-import { plain, reject, settle, store } from './store'
+import { plain, reject, remove, settle, store } from './store'
 
 export function listRelations(seriesId: string) {
   return settle(store.relations.filter((item) => item.seriesId === seriesId))
@@ -19,8 +19,6 @@ export function patchRelation(id: string, patch: RelationPatch) {
 }
 
 export function removeRelation(id: string) {
-  const index = store.relations.findIndex((item) => item.id === id)
-  if (index < 0) return reject(`找不到关系 ${id}`)
-  const [removed] = store.relations.splice(index, 1)
-  return settle(removed)
+  const removed = remove(store.relations, id)
+  return removed ? settle(removed) : reject(`找不到关系 ${id}`)
 }

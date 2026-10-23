@@ -1,6 +1,5 @@
 export * from './assets'
 export * from './episodes'
-export { keys } from './keys'
 export * from './providers'
 export * from './relations'
 export * from './series'

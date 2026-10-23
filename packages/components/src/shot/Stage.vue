@@ -4,7 +4,7 @@ import type { Asset, Frame, Shot, Slot } from '@opendesign/models'
 import { interpolate } from '@opendesign/models'
 import { cn } from '@opendesign/shadcn'
 import { computed, ref } from 'vue'
-import { plates } from './artwork'
+import { crop, plates } from './artwork'
 
 const props = defineProps<{
   shot: Shot
@@ -57,23 +57,13 @@ const entering = computed(() => {
   return { veil: '', opacity: 0, picture: { transform: `translateX(${(1 - t) * 100}%)` } }
 })
 
-function box(value: Frame) {
-  const size = 100 / value.scale
-  return {
-    left: `${50 + value.x - size / 2}%`,
-    top: `${50 + value.y - size / 2}%`,
-    width: `${size}%`,
-    height: `${size}%`,
-  }
-}
-
 const frames = computed(() =>
   (['from', 'to'] as const).map((key) => ({
     key,
     slot: (key === 'from' ? 'first' : 'last') as Slot,
     label: key === 'from' ? '起幅' : '落幅',
     value: props.shot.move[key],
-    box: box(props.shot.move[key]),
+    box: crop(props.shot.move[key]),
   })),
 )
 

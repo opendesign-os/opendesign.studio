@@ -4,6 +4,7 @@ import type { Asset, Shot } from '@opendesign/models'
 import { cameraLabel, shotSizeLabel } from '@opendesign/models'
 import { Badge, cn } from '@opendesign/shadcn'
 import { computed } from 'vue'
+import Avatar from '../layout/Avatar.vue'
 import Tip from '../layout/Tip.vue'
 import Status from './Status.vue'
 import Thumbnail from './Thumbnail.vue'
@@ -63,15 +64,14 @@ const cast = computed(() => props.assets.filter((item) => props.shot.cast.includ
           {{ shot.bubbles.length }}
         </Badge>
         <span class="ml-auto flex -space-x-1.5">
-          <span
+          <Avatar
             v-for="item in cast.slice(0, 4)"
             :key="item.id"
             :title="item.name"
-            class="ring-card flex size-5 items-center justify-center rounded-full text-[9px] font-medium text-white ring-2"
-            :style="{ backgroundColor: item.color }"
-          >
-            {{ item.name.slice(0, 1) }}
-          </span>
+            :name="item.name"
+            :color="item.color"
+            class="ring-card size-5 text-[9px] font-medium ring-2"
+          />
         </span>
       </div>
     </div>

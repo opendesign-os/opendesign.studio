@@ -1,41 +1,30 @@
 <script setup lang="ts">
 import { Boxes, Check, LayoutGrid } from '@lucide/vue'
-import { Format, fills, type Tone } from '@opendesign/components'
-import type { Aspect, SeriesStatus } from '@opendesign/models'
+import { Avatar, Format, fills, tones } from '@opendesign/components'
+import type { Aspect } from '@opendesign/models'
 import { locked, seriesStatusLabel } from '@opendesign/models'
 import {
   useAssets,
-  useEpisode,
   useEpisodes,
   usePatchSeries,
   useSeries,
   useSeriesList,
 } from '@opendesign/queries'
 import { cn, Separator } from '@opendesign/shadcn'
-import { useParams } from '@tanstack/vue-router'
 import { computed } from 'vue'
+import { type Dialog, useWorkspace } from '../workspace'
 
-const emit = defineEmits<{ enter: [seriesId: string]; show: [name: string] }>()
+const emit = defineEmits<{ enter: [seriesId: string]; show: [name: Dialog] }>()
 
 const row =
   'hover:bg-accent text-data flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors duration-150 [&_svg]:size-4 [&_svg]:shrink-0'
 
-const tones: Record<SeriesStatus, Tone> = {
-  writing: 'neutral',
-  producing: 'accent',
-  review: 'warn',
-  published: 'success',
-}
-
-const params = useParams({ from: '/episode/$id' })
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
-const seriesId = computed(() => episode.value?.seriesId ?? '')
+const { seriesId } = useWorkspace()
 const { data: series } = useSeries(seriesId)
 const { data: list } = useSeriesList()
 const { data: episodes } = useEpisodes(seriesId)
 const { data: assets } = useAssets(seriesId)
-const patchSeries = usePatchSeries()
+const patch = usePatchSeries()
 
 const loose = computed(() => (assets.value ?? []).filter((item) => !locked(item)).length)
 const minutes = computed(() =>
@@ -43,7 +32,7 @@ const minutes = computed(() =>
 )
 
 function setAspect(aspect: Aspect) {
-  patchSeries.mutate({ id: seriesId.value, patch: { aspect } })
+  patch.mutate({ id: seriesId.value, patch: { aspect } })
 }
 </script>
 
@@ -51,16 +40,11 @@ function setAspect(aspect: Aspect) {
   <div v-if="series" class="@container">
     <div class="space-y-2.5 p-3">
       <div class="flex items-center gap-2.5">
-        <span
-          class="text-body flex size-9 shrink-0 items-center justify-center rounded-lg font-semibold text-white"
-          :style="{ backgroundColor: series.color }"
-        >
-          {{ series.title.slice(0, 1) }}
-        </span>
+        <Avatar :name="series.title" :color="series.color" class="text-body size-9 rounded-lg" />
         <div class="min-w-0 flex-1">
           <p class="text-body truncate font-semibold">{{ series.title }}</p>
           <p class="text-muted-foreground flex items-center gap-1.5 text-meta">
-            <span :class="cn('size-1.5 rounded-full', fills[tones[series.status]])" />
+            <span :class="cn('size-1.5 rounded-full', fills[tones.series[series.status]])" />
             {{ seriesStatusLabel[series.status] }} · {{ episodes?.length ?? 0 }} 集 · {{ minutes }} 分钟
           </p>
         </div>
@@ -77,12 +61,7 @@ function setAspect(aspect: Aspect) {
     <div class="p-1">
       <p class="text-muted-foreground px-2 py-1.5 text-micro">切换作品</p>
       <button v-for="item in list" :key="item.id" type="button" :class="row" @click="emit('enter', item.id)">
-        <span
-          class="flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-semibold text-white"
-          :style="{ backgroundColor: item.color }"
-        >
-          {{ item.title.slice(0, 1) }}
-        </span>
+        <Avatar :name="item.title" :color="item.color" class="size-5 rounded text-[10px]" />
         <span class="min-w-0 flex-1 truncate">{{ item.title }}</span>
         <span class="text-muted-foreground font-mono text-micro">{{ item.aspect }}</span>
         <Check v-if="item.id === series.id" class="text-foreground" />

@@ -8,27 +8,25 @@
   ],
   "exports": {
     ".": "./src/index.ts",
-    "./theme.css": "./src/theme.css",
     "./*": "./src/*"
   },
   "scripts": {
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@lucide/vue": "^1.61.0",
-    "@vueuse/core": "^15.0.0",
+    "@lucide/vue": "catalog:",
+    "@vueuse/core": "catalog:",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "reka-ui": "^2.11.0",
     "tailwind-merge": "^3.7.0"
   },
   "peerDependencies": {
-    "vue": "^3.5.44"
+    "vue": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vue": "^3.5.44",
-    "vue-tsc": "^3.3.13"
+    "vue": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

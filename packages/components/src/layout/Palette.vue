@@ -12,7 +12,6 @@ import { computed } from 'vue'
 import type { Action } from '../types'
 
 const props = defineProps<{ actions: Action[] }>()
-const emit = defineEmits<{ run: [id: string] }>()
 const open = defineModel<boolean>('open', { required: true })
 
 const groups = computed(() => {
@@ -22,9 +21,9 @@ const groups = computed(() => {
   return [...map]
 })
 
-function run(id: string) {
+function run(action: Action) {
   open.value = false
-  emit('run', id)
+  action.run()
 }
 </script>
 
@@ -34,7 +33,7 @@ function run(id: string) {
     <CommandList>
       <CommandEmpty>没有匹配的命令</CommandEmpty>
       <CommandGroup v-for="[name, items] in groups" :key="name" :heading="name">
-        <CommandItem v-for="item in items" :key="item.id" :value="item.id" @select="run(item.id)">
+        <CommandItem v-for="item in items" :key="item.id" :value="item.id" @select="run(item)">
           <component :is="item.icon" v-if="item.icon" />
           {{ item.label }}
           <CommandShortcut v-if="item.hint">{{ item.hint }}</CommandShortcut>

@@ -1,15 +1,4 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "jsx": "preserve",
-    "jsxImportSource": "vue",
-    "types": ["node"],
-    "noEmit": true,
-    "paths": {
-      "@opendesign/shadcn": ["./src/index.ts"],
-      "@opendesign/shadcn/*": ["./src/*"]
-    }
-  },
   "include": ["src/**/*.ts", "src/**/*.vue"]
 }

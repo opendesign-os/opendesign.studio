@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import type { View } from './asset'
+import type { Slot } from './shot'
 
 export const taskKind = z.enum(['script', 'image', 'keyframe', 'video', 'voice', 'compose'])
 
@@ -21,6 +23,13 @@ export const task = z.object({
 export type TaskKind = z.infer<typeof taskKind>
 export type TaskStatus = z.infer<typeof taskStatus>
 export type Task = z.infer<typeof task>
+export type TaskRequest =
+  | { kind: 'script'; episodeId: string }
+  | { kind: 'compose'; episodeId: string }
+  | { kind: 'image'; assetId: string; view: View }
+  | { kind: 'keyframe'; shotId: string; slot: Slot }
+  | { kind: 'video'; shotId: string }
+  | { kind: 'voice'; shotId: string }
 
 export const taskKindLabel: Record<TaskKind, string> = {
   script: '剧本拆解',
@@ -37,8 +46,6 @@ export const taskStatusLabel: Record<TaskStatus, string> = {
   done: '已完成',
   failed: '失败',
 }
-
-export const taskKinds: TaskKind[] = ['script', 'image', 'keyframe', 'video', 'voice', 'compose']
 
 export function live(item: Task) {
   return item.status === 'queued' || item.status === 'running'

@@ -11,14 +11,13 @@
   },
   "dependencies": {
     "@opendesign/models": "workspace:*",
-    "@vueuse/core": "^15.0.0"
+    "@vueuse/core": "catalog:"
   },
   "peerDependencies": {
-    "vue": "^3.5.44"
+    "vue": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vue": "^3.5.44"
+    "vue": "catalog:"
   }
 }

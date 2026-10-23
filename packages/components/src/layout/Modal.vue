@@ -1,10 +1,10 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends string">
 import { cn, Dialog, DialogContent, DialogDescription, DialogTitle } from '@opendesign/shadcn'
 import type { HTMLAttributes } from 'vue'
 
-const props = defineProps<{ name: string; title: string; class?: HTMLAttributes['class'] }>()
+const props = defineProps<{ name: T; title: string; class?: HTMLAttributes['class'] }>()
 
-const model = defineModel<string | null>({ required: true })
+const model = defineModel<T | null>({ required: true })
 </script>
 
 <template>

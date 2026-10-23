@@ -1,4 +1,4 @@
-import type { Layer, Shot } from '@opendesign/models'
+import type { Frame, Layer, Shot } from '@opendesign/models'
 
 function hue(value: string) {
   let total = 0
@@ -31,4 +31,14 @@ export function cover(shot: Shot, deep: boolean) {
     .reverse()
     .map((entry) => entry.image)
     .join(', ')
+}
+
+export function crop(frame: Frame) {
+  const size = 100 / frame.scale
+  return {
+    left: `${50 + frame.x - size / 2}%`,
+    top: `${50 + frame.y - size / 2}%`,
+    width: `${size}%`,
+    height: `${size}%`,
+  }
 }

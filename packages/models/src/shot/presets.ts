@@ -1,5 +1,5 @@
 import { foleyLabel } from './labels'
-import type { Camera, FoleyKind, Frame } from './schema'
+import type { Camera, EffectStyle, FoleyKind, Frame } from './schema'
 import { foleyKind } from './schema'
 
 export const moves: Record<Camera, { from: Frame; to: Frame }> = {
@@ -10,6 +10,13 @@ export const moves: Record<Camera, { from: Frame; to: Frame }> = {
   tilt: { from: { x: 0, y: -12, scale: 1.2 }, to: { x: 0, y: 12, scale: 1.2 } },
   orbit: { from: { x: -8, y: -4, scale: 1.25 }, to: { x: 8, y: 4, scale: 1.15 } },
   shake: { from: { x: -2, y: 1, scale: 1.1 }, to: { x: 2, y: -1, scale: 1.1 } },
+}
+
+export const onomatopoeia: Record<EffectStyle, string> = {
+  impact: '咚！',
+  soft: '沙沙',
+  speed: '嗖——',
+  glow: '叮',
 }
 
 const lengths: Record<FoleyKind, number> = {

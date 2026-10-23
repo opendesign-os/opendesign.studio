@@ -1,7 +1,11 @@
-import type { Shot, ShotPatch } from '@opendesign/models'
 import { computed, shallowRef } from 'vue'
 
-type Change = { id: string; before: ShotPatch; after: ShotPatch; at: number }
+type Change<P> = { id: string; before: P; after: P; at: number }
+
+export type History<P> = {
+  read: (id: string) => P | undefined
+  apply: (id: string, patch: P) => void
+}
 
 const MERGE = 800
 const LIMIT = 50
@@ -10,18 +14,15 @@ function same(a: string[], b: string[]) {
   return a.length === b.length && a.every((key) => b.includes(key))
 }
 
-export function useHistory(
-  read: (id: string) => Shot | undefined,
-  apply: (id: string, patch: ShotPatch) => void,
-) {
-  const past = shallowRef<Change[]>([])
-  const future = shallowRef<Change[]>([])
+export function useHistory<P extends object>({ read, apply }: History<P>) {
+  const past = shallowRef<Change<P>[]>([])
+  const future = shallowRef<Change<P>[]>([])
   let sealed = false
 
-  function record(id: string, patch: ShotPatch) {
-    const shot = read(id)
-    if (!shot) return
-    const fields = Object.keys(patch) as (keyof ShotPatch)[]
+  function record(id: string, patch: P) {
+    const current = read(id)
+    if (!current) return
+    const fields = Object.keys(patch)
     const last = past.value.at(-1)
     const now = Date.now()
 
@@ -33,7 +34,7 @@ export function useHistory(
     ) {
       past.value = [...past.value.slice(0, -1), { ...last, after: patch, at: now }]
     } else {
-      const before = Object.fromEntries(fields.map((key) => [key, shot[key]])) as ShotPatch
+      const before = Object.fromEntries(fields.map((key) => [key, current[key as keyof P]])) as P
       past.value = [...past.value.slice(-(LIMIT - 1)), { id, before, after: patch, at: now }]
     }
 

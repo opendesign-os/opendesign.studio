@@ -2,31 +2,26 @@
 import { Plus } from '@lucide/vue'
 import { AssetCard, AssetForm } from '@opendesign/components'
 import type { Asset, AssetDraft } from '@opendesign/models'
-import { assetKindLabel, assetKinds, locked } from '@opendesign/models'
+import { assetKind, assetKindLabel, locked } from '@opendesign/models'
 import {
   useAssets,
   useCreateAsset,
-  useEpisode,
-  useGenerateReference,
+  useCreateTask,
   usePatchAsset,
   useRemoveAsset,
   useSeries,
 } from '@opendesign/queries'
 import { Button, cn } from '@opendesign/shadcn'
-import { useParams } from '@tanstack/vue-router'
 import { computed, ref, watch } from 'vue'
+import { useWorkspace } from '../workspace'
 
-const params = useParams({ from: '/episode/$id' })
-
-const episodeId = computed(() => params.value.id)
-const { data: episode } = useEpisode(episodeId)
-const seriesId = computed(() => episode.value?.seriesId ?? '')
+const { seriesId } = useWorkspace()
 const { data: series } = useSeries(seriesId)
 const { data: assets } = useAssets(seriesId)
 const create = useCreateAsset()
 const patch = usePatchAsset()
 const remove = useRemoveAsset()
-const generate = useGenerateReference()
+const generate = useCreateTask()
 
 const kind = ref('all')
 const selected = ref<string | null>(null)
@@ -46,7 +41,7 @@ const all = computed(() => assets.value ?? [])
 
 const filters = computed(() => [
   { id: 'all', label: '全部', count: all.value.length },
-  ...assetKinds.map((item) => ({
+  ...assetKind.options.map((item) => ({
     id: item,
     label: assetKindLabel[item],
     count: all.value.filter((entry) => entry.kind === item).length,
@@ -83,7 +78,7 @@ function startDraft() {
   selected.value = null
 }
 
-function pick(id: string) {
+function select(id: string) {
   drafting.value = false
   selected.value = id
 }
@@ -168,9 +163,9 @@ function drop() {
           :key="item.id"
           :asset="item"
           :active="item.id === selected && !drafting"
-          @select="pick"
+          @select="select"
           @toggle="lock(item, $event)"
-          @generate="generate.mutate({ id: item.id, view: $event })"
+          @generate="generate.mutate({ kind: 'image', assetId: item.id, view: $event })"
         />
       </div>
       <p v-if="!rows.length" class="text-muted-foreground text-data py-12 text-center">

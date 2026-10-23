@@ -20,7 +20,7 @@ const emit = defineEmits<{
   add: [kind: FoleyKind]
   preview: [kind: FoleyKind]
   listen: [id: string]
-  pick: [id: string]
+  select: [id: string]
 }>()
 
 const roster = computed(() => new Map(props.assets.map((item) => [item.id, item])))
@@ -91,7 +91,7 @@ const roster = computed(() => new Map(props.assets.map((item) => [item.id, item]
               <Play class="hidden size-3.5 group-hover:block" />
             </button>
           </Tip>
-          <button type="button" class="min-w-0 flex-1 text-left" @click="emit('pick', item.id)">
+          <button type="button" class="min-w-0 flex-1 text-left" @click="emit('select', item.id)">
             <span class="block truncate text-data">{{ item.line }}</span>
             <span class="text-muted-foreground block truncate text-micro">
               {{ roster.get(item.assetId)?.name ?? '未指定' }} · 镜 {{ item.index }} ·
