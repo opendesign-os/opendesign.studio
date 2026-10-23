@@ -1,17 +1,35 @@
-import { createAppPlugins } from '@opendesign/app/vite'
-import { defineConfig, loadEnv } from 'vite'
+import { fileURLToPath, URL } from 'node:url'
+import tailwindcss from '@tailwindcss/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vite'
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'API_')
+const source = fileURLToPath(new URL('./src', import.meta.url))
+const host = process.env.TAURI_DEV_HOST
+const shell = process.env.TAURI_ENV_PLATFORM
 
-  return {
-    plugins: createAppPlugins(),
-    server: {
-      port: 5200,
-      strictPort: true,
-      proxy: {
-        '/api': { target: env.API_PROXY ?? 'http://localhost:5201', changeOrigin: true },
-      },
-    },
-  }
+export default defineConfig({
+  plugins: [
+    tanstackRouter({
+      target: 'vue',
+      autoCodeSplitting: true,
+      routesDirectory: `${source}/routes`,
+      generatedRouteTree: `${source}/routeTree.gen.ts`,
+    }),
+    vue(),
+    tailwindcss(),
+  ],
+  server: {
+    port: 5200,
+    strictPort: true,
+    host: host ?? false,
+    hmr: host ? { protocol: 'ws', host, port: 5201 } : undefined,
+  },
+  build: shell
+    ? {
+        target: shell === 'windows' ? 'chrome105' : 'safari13',
+        minify: !process.env.TAURI_ENV_DEBUG,
+        sourcemap: Boolean(process.env.TAURI_ENV_DEBUG),
+      }
+    : undefined,
 })

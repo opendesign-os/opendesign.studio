@@ -2,13 +2,12 @@
   "name": "opendesign",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@11.17.0",
+  "packageManager": "pnpm@12.15.0",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "dev": "turbo run dev",
-    "dev:web": "turbo run dev --filter @opendesign/web",
     "desktop": "pnpm --filter @opendesign/native desktop",
     "desktop:build": "pnpm --filter @opendesign/native desktop:build",
     "android": "pnpm --filter @opendesign/native android",
@@ -17,10 +16,8 @@
     "ios:build": "pnpm --filter @opendesign/native ios:build",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
     "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write ."
+    "lint:fix": "biome check --write ."
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

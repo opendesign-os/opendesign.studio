@@ -5,10 +5,10 @@
   "version": "0.1.0",
   "identifier": "studio.opendesign.app",
   "build": {
-    "frontendDist": "../dist",
-    "devUrl": "http://localhost:5210",
-    "beforeDevCommand": "pnpm --filter @opendesign/native dev:vite",
-    "beforeBuildCommand": "pnpm --filter @opendesign/native build"
+    "frontendDist": "../../web/dist",
+    "devUrl": "http://localhost:5200",
+    "beforeDevCommand": "pnpm --filter @opendesign/web dev",
+    "beforeBuildCommand": "pnpm --filter @opendesign/web build"
   },
   "app": {
     "windows": [

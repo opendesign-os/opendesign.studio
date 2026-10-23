@@ -1,4 +1,9 @@
-import { mountApp } from '@opendesign/app'
-import { createWebPlatform } from '@opendesign/platform/web'
+import './style.css'
+import { VueQueryPlugin } from '@tanstack/vue-query'
+import { RouterProvider } from '@tanstack/vue-router'
+import { createApp, h } from 'vue'
+import { queryClient, router } from './router'
 
-mountApp('#app', createWebPlatform())
+createApp(() => h(RouterProvider, { router }))
+  .use(VueQueryPlugin, { queryClient })
+  .mount('#app')

@@ -1,66 +1,54 @@
 import type { Component } from 'vue'
 
-export type NavEntry<T extends string = string> = {
-  path: T
-  label: string
-  icon: Component
-}
+export type Tone = 'neutral' | 'accent' | 'info' | 'success' | 'warn' | 'danger'
 
-export type NavAction = {
+export type Destination = {
   id: string
   label: string
   icon: Component
+  group?: string
 }
 
-export type RecentEntry = {
+export type Action = {
   id: string
-  title: string
-  summary: string
-}
-
-export type Account = {
-  name: string
-  email: string
-  initial: string
+  label: string
+  group: string
+  hint?: string
+  icon?: Component
 }
 
 export type Span = {
-  text: string
-  strong?: boolean
+  start: number
+  duration: number
 }
 
-export type Block =
-  | { kind: 'heading'; text: string }
-  | { kind: 'paragraph'; spans: Span[] }
-  | { kind: 'divider' }
-
-export type FileNode = {
-  name: string
-  path: string
-  kind: 'dir' | 'file'
-  children?: FileNode[]
-}
-
-export type Person = {
+export type Clip = {
   id: string
   name: string
-  initial: string
-  code: string
-  tone: string
+  kind: 'film' | 'text' | 'effect' | 'audio'
+  start: number
+  duration: number
+  badge?: string
+  cover?: string
+  tone?: Tone
+  audio?: Span[]
 }
 
-export type Option = {
+export type Mark = {
+  id: string
+  at: number
+  label: string
+  muted?: boolean
+}
+
+export type Track = {
   id: string
   label: string
-  tone?: string
-}
-
-export type TaskItem = {
-  id: string
-  title: string
-  priority: string
-  assignees: Person[]
-  due: string
-  subtasks: number
-  comments: number
+  kind: Clip['kind']
+  icon?: Component
+  hidden?: boolean
+  locked?: boolean
+  sequential?: boolean
+  clips: Clip[]
+  marks?: Mark[]
 }

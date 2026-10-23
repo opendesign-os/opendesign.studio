@@ -1,14 +1,14 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - "apps/*"
+  - "packages/*"
 
 catalog:
   typescript: ^6.0.3
-  '@biomejs/biome': ^2.5.6
-  '@types/node': ^26.1.2
-  turbo: ^2.10.7
+  "@biomejs/biome": ^2.6.2
+  "@types/node": ^26.6.5
+  turbo: ^2.11.10
 
 onlyBuiltDependencies:
-  - '@biomejs/biome'
+  - "@biomejs/biome"
   - esbuild
   - unrs-resolver

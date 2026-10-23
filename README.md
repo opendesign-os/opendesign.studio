@@ -1,100 +1,107 @@
 # opendesign.studio
 
-一套核心逻辑，跨浏览器、桌面端（Windows / macOS / Linux）与移动端（Android / iOS）。
-Turborepo + pnpm workspace 管理，前端 Vue 3，原生外壳 Tauri 2。
+「开镜」——短剧与漫剧的 AI 生产台。短剧与漫剧共用同一套模型，区别只在镜头里填什么（写实只走配音字幕，漫剧再叠气泡、特效字与 2.5D 运镜）。画面生成、配音与渲染后端尚未接入，目前由内存模拟数据源承载完整流程。
 
-## 架构
-
-采用端口-适配器分层：核心应用只依赖 `@opendesign/platform` 暴露的能力契约，各端入口在挂载前注入自己的实现，端壳保持极薄。
+## 目录
 
 ```
 apps/
-  web/            浏览器薄壳：createWebPlatform() → mountApp()
-  native/         Tauri 薄壳：createNativePlatform() → mountApp()
-    src-tauri/    Rust 工程，桌面与移动共用（lib.rs + mobile_entry_point）
+  web/              网页端：分集工作区路由、浮层面板（panels/）、入口、全局样式
+  native/           Tauri 2 壳：桌面 / Android / iOS 直接加载 apps/web
 packages/
-  app/            核心应用：路由、布局、页面，跨端共用；vite.ts 导出共享构建预设
-  components/     项目自有组件：组合 shadcn 基件，数据与事件走 props / emit
-  platform/       端能力契约（types.ts）+ web.ts / native.ts 两套实现
-  shadcn/         shadcn-vue 源码基座与设计令牌 theme.css
+  common/           纯函数工具：时间格式、取整
+  models/           zod 模型、类型、标签与领域函数（shot/ 按功能拆分）
+  schemas/          数据库表结构（预留，接后端时落地）
+  queries/          TanStack Query 组合式函数；mock/ 为按资源拆分的内存数据源
+  composables/      组合式函数：主题、撤销栈、音频（台词朗读、音效合成、混音调度）
+  components/       组件，按功能分目录：layout timeline shot editor episode series asset task form
+  shadcn/           shadcn-vue 组件源码与设计令牌 theme.css
 ```
 
-新增端能力时的动作顺序：先在 `packages/platform/src/types.ts` 加字段，再补齐 `web.ts` 与 `native.ts`，核心应用通过 `getPlatform()` 使用，不直接引用任何端的 API。
+依赖单向：`common → models → queries / composables → components → apps/web`，`shadcn` 只被 `components` 与 `apps/web` 引用。移动端页面将来放 `apps/mobile`，复用同一组 packages。
 
-端差异只有两处出口：`platform.kind`（browser / desktop / mobile，用于布局分支，例如移动端走底部导航、其余走侧栏）与 platform 实现内部。业务代码里不应出现 `window.__TAURI__` 或 `navigator.userAgent` 判断。
+## 选型
+
+全部使用成熟开源库，不自研同类能力：
+
+| 能力        | 库                                                                             |
+| ----------- | ------------------------------------------------------------------------------ |
+| 路由        | TanStack Router（文件路由 + 自动代码分割）                                     |
+| 服务端状态  | TanStack Query（镜头编辑走乐观更新）                                           |
+| 表单 / 表格 | TanStack Form + zod，TanStack Table                                            |
+| 基础组件    | shadcn-vue（Reka UI）：Tabs、ToggleGroup、Slider、Command、Resizable、Field 等 |
+| 文档编辑    | Tiptap 3（剧本编辑，Markdown 存储，扩展全部用官方包）                          |
+| 节点画布    | Vue Flow（分镜画布、人物关系图谱）                                             |
+| 组合式工具  | VueUse：主题、断点、rAF 播放循环、事件监听、全屏、尺寸监听、本地存储           |
+| 音频        | 浏览器原生 Web Speech API（台词朗读）与 Web Audio API（音效合成）              |
+| 样式 / 工程 | Tailwind CSS 4（原生滚动条工具类与容器查询）、Biome、Turborepo、pnpm           |
+| 原生壳      | Tauri 2                                                                        |
 
 ## 界面
 
-页面按设计稿实现，路由与页面的对应关系：
+整个应用只有一个分集工作区，其余管理都以浮层出现，不再跳独立页面：
 
-| 路由 | 页面 |
-| --- | --- |
-| `/` | Chats 首页：问候语、输入框、Quick start 卡片 |
-| `/chats/$id` | 会话详情：消息流、反馈操作、底部输入框 |
-| `/code` | 项目列表：状态徽章、语言标签、代码量进度条 |
-| `/code/$name` | 代码浏览：文件树 + 语法高亮，左右可拖拽分栏 |
-| `/tasks` | 任务看板：统计卡、搜索与筛选、看板/列表双视图、创建任务弹窗 |
-| `/colab` `/projects` `/agents` `/companies` | 占位页 |
+| 路由                  | 说明                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `/`                   | 打开上次的分集；没有记录时进入在制作品的当前分集                                                                         |
+| `/episode/$id/script` | 剧本：Notion 式文档编辑（`/` 插入、选中文字出浮动工具栏、手柄拖动与块菜单），标题大纲与剧集大纲，自动保存，AI 拆解分镜与候选资产 |
+| `/episode/$id/cast`   | 人物：角色卡片关系图谱，单向关系带箭头，图例按类型筛选，点角色聚焦；右侧依次是角色列表、角色详情、关系编辑               |
+| `/episode/$id`        | 分镜：按场次分组的镜头卡片，可切换为表格，按状态筛选与搜索                                                               |
+| `/episode/$id/canvas` | 画布：Vue Flow 节点排布                                                                                                  |
+| `/episode/$id/edit`   | 剪辑：素材栏、预览、检查器、整集时间轴                                                                                   |
 
-`packages/components` 里的组件都不含路由与业务数据，靠 props / emit 接线：
+各视图共用顶栏，`?shot=` 记录选中的镜头，切换视图时保留。顶栏参照 Vercel / Linear 的面包屑式布局：左侧是单色标识（打开作品台）、作品切换、分集切换，中间是视图切换，右侧是任务、设置和「提交出片」。
+- 弹出菜单（锚定在按钮上）：作品切换（作品信息、画幅、切换作品、资产库与作品台入口）、分集切换、任务（进行中 / 失败 / 全部，可重试、取消、跳到对应镜头）。
+- 居中对话框：作品台（统计与全部作品）、资产库（左侧分类、中间卡片、右侧编辑）、设置（模型、外观）。模型设置按能力分卡片，展开后是接入（服务地址、密钥、测试连接）、生成参数（由 `controls` 规格按能力生成表单）和调度（备用模型、并发上限、失败重试），可一键恢复默认。
+- 任务有失败或进行中时，图标右上角只亮一个小圆点，不再堆数字角标。
 
-| 组件 | 用途 |
-| --- | --- |
-| `NavSidebar` `NavTabbar` `NavItem` | 侧栏（浏览器 / 桌面）与底部导航（移动端） |
-| `WorkspaceTabs` | 顶部 Chats / Colab / Code 分段控件 |
-| `ChatComposer` | 输入框，含工具按钮与模型选择 |
-| `MessageBlocks` | 消息富文本（标题 / 段落 / 分隔线） |
-| `QuickStartCard` `ProjectCard` | 首页快捷卡片、项目卡片 |
-| `FileTree` `CodeView` | 文件树与 shiki 语法高亮（亮/暗双主题） |
-| `StatCard` `BoardColumn` `TaskCard` `TaskDialog` | 任务看板的统计卡、看板列、任务卡与创建弹窗 |
+剧本以 Markdown 保存（`@tiptap/markdown`），编辑器用 Tiptap。不设顶部工具栏，交互参照 Notion：
+- 输入 `/` 打开命令菜单，分「剧本 / 基础 / 插入」三组：场次、旁白、角色对白；正文、标题 1–3、无序 / 有序 / 待办列表、引用、代码块；表格、图片、分割线。输入 `@` 提及角色。
+- 选中文字时出现浮动工具栏：转为其他块类型，加粗、斜体、下划线、删除线、行内代码、高亮、链接、清除格式。Markdown 快捷输入（`## `、`- `、`> `、`**粗体**`）、排版替换（`...` → `…`）以及 `Ctrl B` / `I` / `U`、`Ctrl Z` 等快捷键照常可用。
+- 块左侧有 `+` 和拖拽手柄（`@tiptap/extension-drag-handle-vue-3`）。点 `+` 在下方插入一行并打开 `/` 菜单，按住 Alt 点击则插到上方。拖动手柄可排序，点手柄或右键打开块菜单：转为、创建副本、复制文字、删除。表格的块菜单另有插入行列、合并 / 拆分单元格、切换表头行、删除行列。
+- 图片可以从 `/` 菜单选择，也可以直接粘贴或拖入（`@tiptap/extension-file-handler`），以 data URL 写进 Markdown。
+- 场次、对白、旁白按行识别并着色（`addDecorations`），`@角色` 显示为标签。停笔 0.8 秒自动保存。
+- 左侧大纲栏列出各级标题（点击定位、高亮当前位置），并可展开剧集大纲。大纲栏和候选资产栏的开关记在本机。
+- 对齐、文字颜色这类 Markdown 表达不了的格式不提供，以免保存后丢失。
 
-主题切换写在 `packages/app/src/theme.ts`，深浅偏好经 `platform.store` 持久化——浏览器落到 localStorage，桌面与移动端落到 Tauri store 插件，同一份代码不分叉。首次进入跟随系统偏好。
+人物关系是作品级数据，所有分集共用同一张图谱：关系有起止角色、类型、是否双向、标签与备注；卡片位置记在本机，「重新排列」按主角内圈、配角外圈恢复默认布局。
 
-界面文案与示例数据放在 `packages/app/src/data`，接真实接口时替换这一层即可，页面组件不用动。
+剪辑视图参照剪映类产品的布局：左侧纯图标分组栏（悬停提示）切换素材面板，中间预览与传输栏，右侧检查器分「画面 / 元素 / 生成」三页，底部是整集时间轴。各面板可拖拽调宽并记住布局。
+- 素材面板：镜头（两列缩略图）、资产、音频（音效库与本集台词）、文字、特效、运镜；镜头、资产、音频带搜索。
+- 预览：顶栏是撤销 / 重做、当前镜头与状态、画幅和缩放（适应窗口或 25%–100%，放大后可滚动）。画幅可选竖屏 9:16、横屏 16:9（电脑 / 电视）、竖版 3:4、横版 4:3、方形 1:1、宽银幕 21:9，整部作品的分集共用，作品切换菜单里也能改；舞台里的字幕、气泡、特效字按画面短边缩放，横竖屏下字号一致。底部传输栏是时间码、上一镜 / 播放 / 下一镜、倍速（0.5×–2×）、音量与静音（音量记在本地）、全屏。
+- 时间轴把整集镜头首尾相接：画面片段上半是分格胶片、下半是该镜的配音音效波形，选中后蓝框白把手，拖右缘改时长并顺延后续镜头；气泡、特效字、配音、音效可拖动与裁切，镜头之间的标记即转场。工具条提供配音（为当前镜头台词排队生成）、字幕（在画面上叠加台词）、分割、吸附与缩放。
+- 播放跨镜头连续进行，暂停时当前镜头跟随播放头；舞台上可拖动气泡与特效字，「画面」页显示起幅 / 落幅取景框。取景框画在画面裁切层之外，贴边时标签与缩放手柄仍完整可见，操作提示显示在预览顶栏。
+- 声音：台词用浏览器语音合成朗读，按角色音色选男 / 女声、按情绪调音高与语速，并按台词时长压缩语速；音效按类型（雨、风、列车、心跳等 12 种）用 Web Audio 实时合成。两者随播放、拖动播放头和倍速同步，隐藏配音或音效轨即静音；素材面板与「元素」页可单独试听。接入真实 TTS 与音效素材后只需替换 `packages/composables/src/audio`。
+- 快捷键：`空格` 播放、`←/→` 逐帧（`Shift` 一秒）、`↑/↓` 上一镜 / 下一镜、`S` 在播放头分割镜头、`F` 全屏预览、`Ctrl/⌘ Z` 撤销、`Delete` 删除、`Ctrl/⌘ K` 命令面板。
 
-## 环境要求
-
-- Node >= 22，pnpm 11（版本已由 `packageManager` 锁定）
-- Rust >= 1.85（桌面端与移动端构建）
-- Android：Android SDK + NDK，设置 `ANDROID_HOME` 与 `NDK_HOME`，并 `rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android`
-- iOS：macOS + Xcode，并 `rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios`
-
-## 常用命令
-
-```bash
-pnpm install          # 安装依赖
-pnpm dev              # 浏览器端 http://localhost:5200
-pnpm desktop          # 桌面端（自动拉起 native 壳的 vite，端口 5210）
-pnpm android          # Android 真机 / 模拟器调试
-pnpm ios              # iOS 真机 / 模拟器调试
-pnpm build            # 构建两个壳的前端产物
-pnpm desktop:build    # 打包桌面安装包
-pnpm android:build    # 打包 APK / AAB
-pnpm typecheck        # 全仓类型检查
-pnpm lint             # Biome 检查
-pnpm lint:fix         # Biome 检查并修复
-```
-
-移动端首次使用需要先生成平台工程：
+## 命令
 
 ```bash
-pnpm --filter @opendesign/native android:init
+pnpm install        # 安装依赖
+pnpm dev            # 网页端 http://localhost:5200
+pnpm desktop        # 桌面端（自动拉起网页端开发服务器）
+pnpm android        # Android 调试；首次先 pnpm --filter @opendesign/native android:init
+pnpm ios            # iOS 调试
+pnpm build          # 构建网页端
+pnpm desktop:build  # 打包桌面安装包
+pnpm typecheck      # 全仓类型检查
+pnpm lint           # Biome 检查（lint:fix 自动修复）
 ```
 
-图标改动后重新生成全套尺寸（桌面 ico/icns、Android mipmap、iOS AppIcon）：
-
-```bash
-pnpm --filter @opendesign/native icon
-```
+环境：Node ≥ 22、pnpm 12；原生端另需 Rust ≥ 1.90，移动端按 Tauri 文档配置 Android SDK/NDK 或 Xcode。
 
 ## 约定
 
-- **代码自解释，不写注释**：靠语义化命名表达意图，工厂函数用 `createXXX`，取不到再建用 `getOrCreateXXX`。需要解释的内容写进本文件。
-- **路由**：TanStack Router 文件路由，`packages/app/src/routes` 下每条路由拆两个文件——`xxx.ts` 声明路由（loader / beforeLoad / 校验），`xxx.component.vue` 只写视图。`routeTree.gen.ts` 由插件生成，不要手改。
-- **构建配置**：路由生成与样式扫描口径由 `packages/app/vite.ts` 的 `createAppPlugins()` 统一提供，端壳的 vite 配置只写自己的端口、代理与产物差异。
-- **组件分两层**：`packages/shadcn` 只放 shadcn-vue CLI 生成的源码，在该包目录下用 `pnpm dlx shadcn-vue@latest add <组件>` 追加，不手改、Biome 也不检查；项目自有组件写在 `packages/components`，可以组合 shadcn 基件，但不引用路由与业务数据——导航类组件通过 `items` / `active` 接收数据，用 `select` 事件把动作交回 app。
-- **样式**：设计令牌集中在 `packages/shadcn/src/theme.css`（含亮/暗两套与品牌色 `--brand`、状态色 `--success`），全局样式、字体与移动端安全区适配在 `packages/app/src/style.css`；新增包后要在该文件补 `@source`，否则 Tailwind 扫不到类名。
-- **字体**：Space Grotesk（正文）与 JetBrains Mono（代码）由 `@fontsource-variable/*` 本地打包，离线可用，不依赖 Google Fonts。
-- **Tauri 权限**：新增插件后要在 `apps/native/src-tauri/capabilities/default.json` 登记权限，否则前端调用会被拒绝。
-- **依赖版本**：只有基础工具链（typescript / biome / turbo / @types/node）走 `pnpm-workspace.yaml` 的 catalog 统一版本，其余依赖各包自行声明。
-- **代码风格**：Biome 统一格式化与 lint——单引号、按需分号、行宽 100、2 空格缩进。
+- **命名**：优先单个通用词，文件名同样（`Stage` `Gallery` `Timeline`）；与模型同名或语义不足时才组合（`ShotForm` `AssetCard`）。文件按功能分目录。
+- **数据**：结构只在 zod 模型里定义一次，类型用 `z.infer` 推导；更新统一走 `patchXxx(id, patch)`，`XxxPatch` 由模型类型推导。页面只通过 queries 读写，写入模拟数据源前经 `plain()` 拍平响应式代理。
+- **路由**：`xxx.ts` 声明路由，`xxx.component.vue` 写视图，`routeTree.gen.ts` 由插件生成。对话框开关放在 `src/dialog.ts`（剪辑视图也能直接打开资产库），最近打开的分集记在 `src/recent.ts`。
+- **按钮**：图标优先，悬停用 `Tip` 显示名称和快捷键；只有主操作（提交出片、AI 拆解分镜、新建资产）保留文字。数量提示用小圆点，不用彩色数字角标。
+- **滚动条**：全局用 Tailwind 4 原生的 `scrollbar-thin` / `scrollbar-thumb-*`，细滚动条默认透明、鼠标悬停才浮现，不另装插件。
+- **分割条与自适应**：面板分割条带胶囊形拖拽手柄，悬停与拖动时高亮，触摸热区 12px；面板内容用容器查询（`@container`）按自身宽度调整，网格用 `repeat(auto-fill, minmax(min(最小宽, 100%), 1fr))` 自动排列，面板比最小宽还窄时卡片跟着收窄，选中描边不会被滚动条挡住；窄时标签收成图标、次要控件隐藏。
+- **提示与弹层**：Reka 的 Tooltip 与 Popover / DropdownMenu 共用未隔离的定位上下文，提示包住弹层触发器时会抢走锚点。因此下拉菜单内容用 `reference` 显式定位到按钮，Popover 用 `PopoverAnchor`；被提示包裹的开关、页签、触发器按 `aria-pressed` / `aria-selected` / `aria-expanded` 着色，分割条按 `data-resize-handle-state` 高亮，不依赖会被提示覆盖的 `data-state`。
+- **动效**：分区折叠按 Reka 提供的内容高度做高度过渡，页签切换淡入；左侧素材栏与右侧检查器是可折叠面板，点按钮折叠 / 展开时宽度平滑过渡，拖拽时不加过渡。
+- **shadcn**：组件源码可按设计系统定制——已统一为紧凑密度（`text-data` 12px 等）并给 Badge 换成语义色变体（neutral / accent / info / success / warn / danger）。新增组件用 shadcn-vue CLI 或从其 registry 拉取。
+- **设计令牌**：集中在 `packages/shadcn/src/theme.css`，字号令牌 `text-micro/meta/data/body/title`；`cn()` 已为这些令牌扩展 tailwind-merge，否则会被误当成颜色类合并掉。默认浅色，主题偏好由 VueUse 持久化。
+- **拖拽**：拖动中的每一步都走乐观更新；TanStack Query 的通知改为 `queueMicrotask` 调度，镜头 patch 在最后一个并发请求结束后才统一刷新，所以松手不会先渲染旧数据再跳变；单镜头查询用已缓存的整集列表预填（initialData）并保留上一份数据（keepPreviousData），拖播放头跨镜头时页面不会清空重绘。可拖拽的区域都 `select-none` 并在按下时阻止默认行为。
+- **打包**：`components`、`shadcn` 声明 `sideEffects: ["**/*.css"]` 以便按路由摇树；带全局样式的重组件（`Canvas`）由页面按子路径单独引入。
+- **TypeScript** 暂停在 6.x：vue-tsc 依赖 `typescript/lib/tsc`，TypeScript 7 不再提供该入口。

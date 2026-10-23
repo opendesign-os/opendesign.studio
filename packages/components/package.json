@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*"
@@ -11,17 +14,43 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@lucide/vue": "^1.28.0",
+    "@floating-ui/dom": "^1.8.0",
+    "@lucide/vue": "^1.61.0",
+    "@opendesign/common": "workspace:*",
+    "@opendesign/composables": "workspace:*",
+    "@opendesign/models": "workspace:*",
     "@opendesign/shadcn": "workspace:*",
-    "shiki": "^4.4.2"
+    "@tanstack/vue-form": "^1.33.5",
+    "@tanstack/vue-table": "^9.3.1",
+    "@tiptap/core": "^3.32.0",
+    "@tiptap/extension-bubble-menu": "^3.32.0",
+    "@tiptap/extension-drag-handle": "^3.32.0",
+    "@tiptap/extension-drag-handle-vue-3": "^3.32.0",
+    "@tiptap/extension-file-handler": "^3.32.0",
+    "@tiptap/extension-highlight": "^3.32.0",
+    "@tiptap/extension-image": "^3.32.0",
+    "@tiptap/extension-list": "^3.32.0",
+    "@tiptap/extension-node-range": "^3.32.0",
+    "@tiptap/extension-table": "^3.32.0",
+    "@tiptap/extension-typography": "^3.32.0",
+    "@tiptap/extensions": "^3.32.0",
+    "@tiptap/markdown": "^3.32.0",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
+    "@tiptap/suggestion": "^3.32.0",
+    "@tiptap/vue-3": "^3.32.0",
+    "@vue-flow/background": "^1.3.2",
+    "@vue-flow/controls": "^1.1.3",
+    "@vue-flow/core": "^1.48.2",
+    "@vueuse/core": "^15.0.0"
   },
   "peerDependencies": {
-    "vue": "^3.5.40"
+    "vue": "^3.5.44"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vue": "^3.5.40",
-    "vue-tsc": "^3.3.8"
+    "vue": "^3.5.44",
+    "vue-tsc": "^3.3.13"
   }
 }

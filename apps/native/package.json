@@ -4,9 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:vite": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "typecheck": "vue-tsc --noEmit",
     "desktop": "tauri dev",
     "desktop:build": "tauri build",
     "android": "tauri android dev",
@@ -17,15 +14,7 @@
     "ios:init": "tauri ios init",
     "icon": "tauri icon icon.svg"
   },
-  "dependencies": {
-    "@opendesign/app": "workspace:*",
-    "@opendesign/platform": "workspace:*"
-  },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.11.4",
-    "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "vite": "^8.2.0",
-    "vue-tsc": "^3.3.8"
+    "@tauri-apps/cli": "^2.12.4"
   }
 }

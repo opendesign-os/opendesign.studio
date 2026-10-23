@@ -1,0 +1,25 @@
+{
+  "name": "@opendesign/queries",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opendesign/common": "workspace:*",
+    "@opendesign/models": "workspace:*",
+    "@tanstack/vue-query": "^5.104.5"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.44"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vue": "^3.5.44"
+  }
+}
