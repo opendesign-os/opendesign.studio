@@ -2,6 +2,7 @@
 import { Lock, LockOpen, Sparkles } from '@lucide/vue'
 import type { Asset, View } from '@opendesign/models'
 import { assetKindLabel, locked, roleLabel, view, viewLabel, voiceLabel } from '@opendesign/models'
+import { media } from '@opendesign/queries'
 import { Badge, cn } from '@opendesign/shadcn'
 import { computed } from 'vue'
 import Avatar from '../layout/Avatar.vue'
@@ -67,7 +68,7 @@ const stable = computed(() => locked(props.asset))
         <div
           :class="
             cn(
-              'relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded border text-micro',
+              'relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded border bg-cover bg-center text-micro',
               entry.reference
                 ? 'border-border'
                 : 'border-border border-dashed text-muted-foreground',
@@ -76,7 +77,9 @@ const stable = computed(() => locked(props.asset))
           :style="
             entry.reference
               ? {
-                  backgroundImage: `linear-gradient(150deg, ${asset.color}3d, ${asset.color}14 60%, transparent)`,
+                  backgroundImage: entry.reference.image
+                    ? `url(${media(entry.reference.image)})`
+                    : `linear-gradient(150deg, ${asset.color}3d, ${asset.color}14 60%, transparent)`,
                 }
               : undefined
           "
@@ -90,7 +93,16 @@ const stable = computed(() => locked(props.asset))
               <Sparkles class="size-3.5" />
             </button>
           </Tip>
-          <Tip v-else :label="entry.reference.locked ? '解锁' : '锁定为基准'">
+          <Tip v-if="entry.reference" label="重新生成">
+            <button
+              type="button"
+              class="absolute top-1 right-1 flex size-5 items-center justify-center rounded bg-black/55 text-white transition-colors duration-150 hover:bg-black/75"
+              @click="emit('generate', entry.view)"
+            >
+              <Sparkles class="size-2.5" />
+            </button>
+          </Tip>
+          <Tip v-if="entry.reference" :label="entry.reference.locked ? '解锁' : '锁定为基准'">
             <button
               type="button"
               class="absolute right-1 bottom-1 flex size-5 items-center justify-center rounded bg-black/55 text-white transition-colors duration-150 hover:bg-black/75"

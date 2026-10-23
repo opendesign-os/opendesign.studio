@@ -7,6 +7,7 @@ import {
   ListChecks,
   LoaderCircle,
   Network,
+  PlayCircle,
   Send,
   Settings,
   Table2,
@@ -16,6 +17,7 @@ import { Avatar, Modal, Tip } from '@opendesign/components'
 import type { Task } from '@opendesign/models'
 import { live, ready, resume } from '@opendesign/models'
 import {
+  media,
   useAssets,
   useCandidates,
   useCreateTask,
@@ -35,13 +37,13 @@ import {
 import { useIsMutating } from '@tanstack/vue-query'
 import { Link, Outlet, useRouter, useRouterState } from '@tanstack/vue-router'
 import { computed, ref, watch } from 'vue'
-import Assets from '../panels/Assets.vue'
-import Episodes from '../panels/Episodes.vue'
-import Home from '../panels/Home.vue'
-import Preferences from '../panels/Preferences.vue'
-import Series from '../panels/Series.vue'
-import Tasks from '../panels/Tasks.vue'
-import { type Dialog, dialog, recent, useWorkspace } from '../workspace'
+import Assets from '../components/asset/Assets.vue'
+import Episodes from '../components/series/Episodes.vue'
+import Home from '../components/series/Home.vue'
+import Series from '../components/series/Series.vue'
+import Preferences from '../components/settings/Preferences.vue'
+import Tasks from '../components/task/Tasks.vue'
+import { type Dialog, dialog, recent, useWorkspace } from '../composables/workspace'
 
 const crumb =
   'hover:bg-accent data-[state=open]:bg-accent text-body flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-1 transition-colors duration-150'
@@ -242,6 +244,13 @@ function jump(task: Task) {
         <Tip label="设置">
           <Button variant="ghost" size="icon-sm" @click="show('settings')">
             <Settings />
+          </Button>
+        </Tip>
+        <Tip v-if="episode?.output" label="查看成片">
+          <Button variant="ghost" size="icon-sm" as-child>
+            <a :href="media(episode.output)" target="_blank" rel="noreferrer">
+              <PlayCircle />
+            </a>
           </Button>
         </Tip>
         <Tip :label="`整集提交出片 · ${runnable}/${rows.length} 个镜头就绪`">

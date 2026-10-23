@@ -13,7 +13,7 @@ import {
 } from '@opendesign/queries'
 import { Button, cn, Input, Switch, Textarea } from '@opendesign/shadcn'
 import { computed, ref } from 'vue'
-import { useWorkspace } from '../workspace'
+import { useWorkspace } from '../composables/workspace'
 
 const { seriesId } = useWorkspace()
 const { data: assets } = useAssets(seriesId)

@@ -1,10 +1,11 @@
 import type { Emotion, FoleyKind, Voice } from '@opendesign/models'
 import { type MaybeRefOrGetter, onScopeDispose, type Ref, toValue, watch } from 'vue'
+import { clip } from './clip'
 import { hush, prime, speak } from './speech'
 import { synthesize } from './synth'
 
 export type Cue = { id: string; start: number; duration: number } & (
-  | { kind: 'voice'; text: string; voice?: Voice; emotion?: Emotion }
+  | { kind: 'voice'; text: string; voice?: Voice; emotion?: Emotion; src?: string }
   | { kind: 'sound'; sound: FoleyKind }
 )
 
@@ -46,6 +47,7 @@ export function useMixer(options: Mixer) {
     if (remaining <= 0.05) return null
     if (cue.kind === 'voice') {
       const volume = toValue(options.volume)
+      if (volume > 0 && cue.src) return clip(cue.src, offset, rate, volume)
       if (volume > 0) {
         speak(cue.text, {
           voice: cue.voice,

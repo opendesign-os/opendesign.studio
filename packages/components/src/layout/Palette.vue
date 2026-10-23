@@ -9,7 +9,7 @@ import {
   CommandShortcut,
 } from '@opendesign/shadcn'
 import { computed } from 'vue'
-import type { Action } from '../types'
+import type { Action } from './types'
 
 const props = defineProps<{ actions: Action[] }>()
 const open = defineModel<boolean>('open', { required: true })

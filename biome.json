@@ -23,6 +23,9 @@
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "asNeeded"
+    },
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
     }
   },
   "css": {
@@ -55,6 +58,16 @@
             "noUnusedImports": "off",
             "noUnusedVariables": "off"
           },
+          "style": {
+            "useImportType": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/**"],
+      "linter": {
+        "rules": {
           "style": {
             "useImportType": "off"
           }

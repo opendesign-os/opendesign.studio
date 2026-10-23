@@ -2,8 +2,8 @@
 import { Type, Zap } from '@lucide/vue'
 import { cn } from '@opendesign/shadcn'
 import { computed } from 'vue'
-import { fills } from '../tone'
-import type { Clip, Tone } from '../types'
+import { fills, type Tone } from '../common/tone'
+import type { Clip } from './types'
 
 const props = defineProps<{
   clip: Clip

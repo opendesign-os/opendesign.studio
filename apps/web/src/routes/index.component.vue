@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { LoaderCircle } from '@lucide/vue'
+import { LoaderCircle, Plus } from '@lucide/vue'
 import { resume } from '@opendesign/models'
 import { useEpisodes, useSeriesList } from '@opendesign/queries'
+import { Button } from '@opendesign/shadcn'
 import { useRouter } from '@tanstack/vue-router'
-import { computed, watchEffect } from 'vue'
-import { recent } from '../workspace'
+import { computed, ref, watchEffect } from 'vue'
+import CreateSeries from '../components/series/CreateSeries.vue'
+import { recent } from '../composables/workspace'
 
 const router = useRouter()
 const { data: series } = useSeriesList()
@@ -19,6 +21,8 @@ const target = computed(() => {
     resume(all.filter((item) => item.seriesId === lead?.id))
   )
 })
+
+const creating = ref(false)
 
 const empty = computed(() => Boolean(series.value && episodes.value && !target.value))
 
@@ -35,7 +39,14 @@ watchEffect(() => {
 
 <template>
   <div class="page-hint">
-    <template v-if="empty">还没有作品</template>
+    <template v-if="empty">
+      <p>还没有作品</p>
+      <Button size="sm" @click="creating = true">
+        <Plus />
+        新建作品
+      </Button>
+      <CreateSeries v-model="creating" />
+    </template>
     <template v-else>
       <LoaderCircle class="size-5 animate-spin" />
       正在打开工作区…

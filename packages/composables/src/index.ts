@@ -1,3 +1,3 @@
-export * from './audio/mixer'
+export * from './audio'
 export * from './history'
 export * from './theme'

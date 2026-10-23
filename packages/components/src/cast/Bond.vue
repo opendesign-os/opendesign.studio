@@ -5,7 +5,7 @@ import { cn } from '@opendesign/shadcn'
 import type { EdgeProps, GraphNode } from '@vue-flow/core'
 import { BaseEdge, EdgeLabelRenderer, getStraightPath } from '@vue-flow/core'
 import { computed } from 'vue'
-import { relationColor } from '../tone'
+import { relationColor } from '../common/tone'
 
 type Data = { relation: Relation; lit: boolean; dim: boolean; choose: () => void }
 

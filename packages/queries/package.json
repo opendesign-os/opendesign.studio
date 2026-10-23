@@ -12,7 +12,9 @@
   "dependencies": {
     "@opendesign/common": "workspace:*",
     "@opendesign/models": "workspace:*",
-    "@tanstack/vue-query": "catalog:"
+    "@tanstack/vue-query": "catalog:",
+    "better-auth": "catalog:",
+    "ofetch": "catalog:"
   },
   "peerDependencies": {
     "vue": "catalog:"

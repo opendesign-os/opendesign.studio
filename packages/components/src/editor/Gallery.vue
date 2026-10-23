@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Placement } from '@opendesign/models'
 import { cn } from '@opendesign/shadcn'
+import { fills, tones } from '../common/tone'
 import Thumbnail from '../shot/Thumbnail.vue'
-import { fills, tones } from '../tone'
 
 defineProps<{ placements: Placement[]; current: string }>()
 const emit = defineEmits<{ select: [id: string] }>()

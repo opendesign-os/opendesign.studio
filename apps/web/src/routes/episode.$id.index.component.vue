@@ -7,7 +7,7 @@ import { cn, Input, Skeleton, ToggleGroup, ToggleGroupItem } from '@opendesign/s
 import { useRouter } from '@tanstack/vue-router'
 import { useLocalStorage } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useWorkspace } from '../workspace'
+import { useWorkspace } from '../composables/workspace'
 
 const chip =
   'text-muted-foreground hover:text-foreground data-[state=on]:bg-accent data-[state=on]:text-foreground h-7 shrink-0 gap-1.5 rounded-md px-2.5 text-meta font-medium shadow-none'

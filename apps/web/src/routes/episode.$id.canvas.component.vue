@@ -16,7 +16,7 @@ import {
 } from '@opendesign/shadcn'
 import { useRouter, useSearch } from '@tanstack/vue-router'
 import { computed, nextTick, ref } from 'vue'
-import { useWorkspace } from '../workspace'
+import { useWorkspace } from '../composables/workspace'
 
 const search = useSearch({ from: '/episode/$id/canvas' })
 const router = useRouter()

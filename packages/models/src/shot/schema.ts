@@ -73,6 +73,7 @@ export const layer = z.object({
 export const keyframe = z.object({
   slot,
   ready: z.boolean(),
+  image: z.string().optional(),
 })
 
 export const dialogue = z.object({
@@ -82,6 +83,7 @@ export const dialogue = z.object({
   emotion,
   start: z.number().nonnegative(),
   duration: z.number().positive(),
+  audio: z.string().optional(),
 })
 
 export const bubble = z.object({
@@ -133,6 +135,7 @@ export const shot = z.object({
   status: shotStatus,
   note: z.string().max(120, '备注最多 120 个字'),
   position: point,
+  video: z.string().optional(),
 })
 
 export const shotDraft = shot.pick({
@@ -141,6 +144,10 @@ export const shotDraft = shot.pick({
   prompt: true,
   note: true,
 })
+
+export const shotPatch = shot
+  .omit({ id: true, episodeId: true, index: true, keyframes: true, video: true })
+  .partial()
 
 export type ShotSize = z.infer<typeof shotSize>
 export type Camera = z.infer<typeof camera>
@@ -164,4 +171,4 @@ export type Effect = z.infer<typeof effect>
 export type Sound = z.infer<typeof sound>
 export type Shot = z.infer<typeof shot>
 export type ShotDraft = z.infer<typeof shotDraft>
-export type ShotPatch = Partial<Omit<Shot, 'id' | 'episodeId' | 'index' | 'keyframes'>>
+export type ShotPatch = z.infer<typeof shotPatch>

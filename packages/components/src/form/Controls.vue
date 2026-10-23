@@ -24,6 +24,11 @@ function pick(key: string, value: unknown) {
   if (typeof value === 'string' && value) emit('change', key, value)
 }
 
+function write(key: string, raw: string) {
+  const value = raw.trim()
+  if (value) emit('change', key, value)
+}
+
 function type(control: Control & { type: 'number' }, raw: string) {
   const value = Number(raw)
   if (Number.isFinite(value)) {
@@ -81,13 +86,20 @@ function type(control: Control & { type: 'number' }, raw: string) {
       />
 
       <Input
-        v-else
+        v-else-if="control.type === 'number'"
         type="number"
         class="w-36 font-mono tabular-nums"
         :model-value="Number(read(control))"
         :min="control.min"
         :max="control.max"
         @change="type(control, ($event.target as HTMLInputElement).value)"
+      />
+
+      <Input
+        v-else
+        class="w-36 font-mono"
+        :model-value="String(read(control))"
+        @change="write(control.key, ($event.target as HTMLInputElement).value)"
       />
     </div>
   </div>

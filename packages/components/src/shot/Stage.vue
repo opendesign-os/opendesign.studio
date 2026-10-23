@@ -2,8 +2,9 @@
 import { useTheme } from '@opendesign/composables'
 import type { Asset, Frame, Shot, Slot } from '@opendesign/models'
 import { interpolate } from '@opendesign/models'
+import { media } from '@opendesign/queries'
 import { cn } from '@opendesign/shadcn'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { crop, plates } from './artwork'
 
 const props = defineProps<{
@@ -29,6 +30,25 @@ const { dark } = useTheme()
 const root = ref<HTMLElement | null>(null)
 
 const layers = computed(() => plates(props.shot, dark.value))
+const still = computed(() => {
+  const key = props.shot.keyframes.find((item) => item.slot === 'first')?.image
+  return key ? `url(${media(key)})` : undefined
+})
+const footage = computed(() => (props.shot.video ? media(props.shot.video) : undefined))
+const clip = ref<HTMLVideoElement | null>(null)
+
+watch([() => props.time, () => props.playing, clip], ([time, playing, element]) => {
+  if (!element) return
+  if (playing) {
+    if (element.paused) {
+      element.currentTime = time
+      void element.play()
+    }
+    return
+  }
+  element.pause()
+  if (Math.abs(element.currentTime - time) > 0.05) element.currentTime = time
+})
 const editing = computed(() => props.framing && !props.playing)
 
 const ink = computed(() => (dark.value ? 'text-white/40' : 'text-black/45'))
@@ -163,22 +183,38 @@ function drag(event: PointerEvent, item: { id: string; x: number; y: number }) {
   >
     <div class="bg-stage absolute inset-0 overflow-hidden rounded-[inherit]">
       <div class="absolute inset-0" :style="entering?.picture">
-        <div
-          v-for="plate in layers"
-          :key="plate.layer.plane"
-          class="absolute inset-0 origin-center"
-          :class="plate.layer.hidden && 'hidden'"
-          :style="{ backgroundImage: plate.image, ...transform(plate.layer.depth) }"
+        <video
+          v-if="footage && !editing"
+          ref="clip"
+          :src="footage"
+          class="absolute inset-0 size-full object-cover"
+          muted
+          playsinline
+          preload="auto"
         />
+        <div
+          v-else-if="still"
+          class="absolute inset-0 origin-center bg-cover bg-center"
+          :style="{ backgroundImage: still, ...transform(1) }"
+        />
+        <template v-else>
+          <div
+            v-for="plate in layers"
+            :key="plate.layer.plane"
+            class="absolute inset-0 origin-center"
+            :class="plate.layer.hidden && 'hidden'"
+            :style="{ backgroundImage: plate.image, ...transform(plate.layer.depth) }"
+          />
 
-        <div class="absolute inset-0 origin-center" :style="transform(1)">
-          <p
-            class="absolute inset-x-[8%] top-1/2 -translate-y-1/2 text-center text-[1.6cqmin] leading-relaxed"
-            :class="ink"
-          >
-            {{ shot.prompt }}
-          </p>
-        </div>
+          <div class="absolute inset-0 origin-center" :style="transform(1)">
+            <p
+              class="absolute inset-x-[8%] top-1/2 -translate-y-1/2 text-center text-[1.6cqmin] leading-relaxed"
+              :class="ink"
+            >
+              {{ shot.prompt }}
+            </p>
+          </div>
+        </template>
       </div>
 
       <div :class="cn('absolute inset-0', editing && 'pointer-events-none opacity-40')">

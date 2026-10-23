@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { cn } from '@opendesign/shadcn'
 import { computed } from 'vue'
-import type { Destination } from '../types'
 import Tip from './Tip.vue'
+import type { Destination } from './types'
 
 const props = defineProps<{ entries: Destination[]; active: string }>()
 const emit = defineEmits<{ select: [id: string] }>()

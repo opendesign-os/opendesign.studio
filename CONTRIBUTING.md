@@ -25,15 +25,25 @@
 ## 数据
 
 - 结构只在 zod 模型里定义一次，类型用 `z.infer` 推导；枚举取值直接用 `xxx.options`，不另建数组。
-- 页面只通过 `@opendesign/queries` 读写。查询键集中在 `packages/queries/src/cache.ts` 的 `keys`，缓存失效统一用 `useInvalidate()`。
+- 页面只通过 `@opendesign/queries` 读写，请求统一走 `common/api.ts`（ofetch）。查询键集中在 `packages/queries/src/common/cache.ts` 的 `keys`，缓存失效统一用 `useInvalidate()`。
+- 登录状态只以 better-auth 的 `auth.useSession()` 为准：根路由据此在登录页与工作区之间跳转，接口返回 401 时通知 better-auth 刷新会话（`auth.$store.notify('$sessionSignal')`），不另做判断。
 - 更新统一走 `patchXxx(id, patch)`，`XxxPatch` 由模型类型推导。修改类 mutation 由 `usePatch()` 生成：自带乐观更新，并在最后一个并发请求结束后才统一刷新，拖拽松手不会先渲染旧数据再跳变。TanStack Query 的通知改为 `queueMicrotask` 调度。
-- 生成类操作（剧本拆解、参考图、关键帧、视频、配音、合成出片）统一提交任务：`useCreateTask().mutate({ kind, ... })`，请求结构见模型里的 `TaskRequest`。
-- 写入模拟数据源前经 `plain()` 拍平响应式代理。接入后端时只替换 `packages/queries/src/mock`，音频接入真实 TTS 与音效素材时只替换 `packages/composables/src/audio`。
+- 生成类操作（剧本拆解、参考图、关键帧、视频、配音、合成出片）统一提交任务：`useCreateTask().mutate({ kind, ... })`，请求结构见模型里的 `TaskRequest`。生成后的素材在模型里只存对象存储的 key，界面用 `media(key)` 得到地址（`/api/media/...` 鉴权后跳转到预签名链接）。任务进行中时任务列表自动轮询，任务结束后刷新受影响的数据。
 
 ## 路由与状态
 
 - `xxx.ts` 声明路由，`xxx.component.vue` 写视图，`routeTree.gen.ts` 由插件生成。
-- 分集工作区的上下文（分集、作品）用 `useWorkspace()` 获取；对话框开关与最近打开的分集同在 `apps/web/src/workspace.ts`，剪辑视图也能直接打开资产库。
+- 分集工作区的上下文（分集、作品）用 `useWorkspace()` 获取；对话框开关与最近打开的分集同在 `apps/web/src/composables/workspace.ts`，剪辑视图也能直接打开资产库。
+
+## 服务端
+
+- 结构：`config/` 环境变量（zod 校验，`@nestjs/config` 加载），`common/` 数据库模块、查询辅助与通用装饰器，`modules/` 每个业务一个模块（module / controller / service）。
+- 表结构只在 `packages/schemas` 定义，统一用 `createTable` 建表：自动带 `id`、`createdAt`、`createdBy`、`updatedAt`、`updatedBy`，后两者由请求上下文里的当前用户填写。迁移在 `apps/api/drizzle`，改表后运行 `db:generate` 生成。
+- 请求参数用 `@opendesign/models` 里的同一份 zod 模型校验：`@Body({ schema })`、`@Query('x', { schema })`，路径 id 用 `@Id()`；业务数据一律按团队隔离，用 `@Tenant()` 取当前团队。
+- 认证由 better-auth 挂在 `/api/auth/*`，其余接口默认需要登录；新用户注册时自动创建个人团队。
+- 服务层方法统一为 `list` `find` `create` `update` `remove`，接口按资源平铺：`GET /api/assets?seriesId=`、`POST /api/assets`、`PATCH /api/assets/:id`、`DELETE /api/assets/:id`。
+- 生成任务：写任务行与入队在同一事务里完成（pg-boss 的 `fromDrizzle`），按能力分队列（text / image / video / voice / compose），团队并发上限用 pg-boss 的分组配额，重试次数取模型配置。每一步是 `modules/tasks/jobs` 下的一个 `*.job.ts`，模型调用统一走 Vercel AI SDK，厂商到 provider 的映射集中在 `modules/providers/vendors.ts`；新增厂商时只改这里和 `packages/models` 的 `vendors`。
+- 素材读写走 `common/storage`（S3 兼容），key 按团队前缀存放，`GET /api/media/:owner/:file` 校验团队后跳转到预签名链接。
 
 ## 界面
 

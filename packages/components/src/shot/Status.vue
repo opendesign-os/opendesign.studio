@@ -2,7 +2,7 @@
 import type { ShotStatus } from '@opendesign/models'
 import { shotStatusLabel } from '@opendesign/models'
 import { Badge } from '@opendesign/shadcn'
-import { tones } from '../tone'
+import { tones } from '../common/tone'
 
 defineProps<{ status: ShotStatus }>()
 </script>

@@ -2,8 +2,10 @@
 import type { Episode, Series } from '@opendesign/models'
 import { formats, seriesStatusLabel } from '@opendesign/models'
 import { Badge, Progress } from '@opendesign/shadcn'
+import { formatDistanceToNowStrict } from 'date-fns'
+import { zhCN } from 'date-fns/locale'
 import { computed } from 'vue'
-import { tones } from '../tone'
+import { tones } from '../common/tone'
 
 const props = defineProps<{ series: Series; episodes: Episode[] }>()
 const emit = defineEmits<{ open: [id: string] }>()
@@ -13,6 +15,10 @@ const progress = computed(() => {
   const done = props.episodes.reduce((total, item) => total + item.done, 0)
   return { shots, done }
 })
+
+const updated = computed(() =>
+  formatDistanceToNowStrict(props.series.updatedAt, { addSuffix: true, locale: zhCN }),
+)
 </script>
 
 <template>
@@ -46,7 +52,7 @@ const progress = computed(() => {
 
       <div class="text-muted-foreground mt-3 flex items-center justify-between text-meta">
         <span>{{ episodes.length }} 集 · {{ progress.done }}/{{ progress.shots }} 镜</span>
-        <span>{{ series.updated }}</span>
+        <span>{{ updated }}</span>
       </div>
       <Progress class="mt-1.5 h-1" :model-value="progress.shots ? (progress.done / progress.shots) * 100 : 0" />
     </div>

@@ -97,6 +97,7 @@ import {
   transitionLabel,
 } from '@opendesign/models'
 import {
+  media,
   useAssets,
   useCreateTask,
   usePatchSeries,
@@ -130,7 +131,7 @@ import {
   useTimeoutFn,
 } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
-import { dialog, useWorkspace } from '../workspace'
+import { dialog, useWorkspace } from '../composables/workspace'
 
 type Key = 'bubbles' | 'effects' | 'dialogue' | 'sounds'
 type Owner = { placement: Placement; key: Key | null; start: number; end: number }
@@ -352,6 +353,7 @@ const cues = computed<Cue[]>(() =>
       text: item.line,
       voice: roster.value.get(item.assetId)?.voice,
       emotion: item.emotion,
+      src: item.audio && media(item.audio),
       start: start + item.start,
       duration: item.duration,
     })),

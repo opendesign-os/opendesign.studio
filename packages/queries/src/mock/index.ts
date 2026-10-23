@@ -1,7 +1,0 @@
-export * from './assets'
-export * from './episodes'
-export * from './providers'
-export * from './relations'
-export * from './series'
-export * from './shots'
-export * from './tasks'

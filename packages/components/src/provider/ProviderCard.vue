@@ -1,50 +1,69 @@
 <script setup lang="ts">
-import { ChevronDown, Eye, EyeOff, LoaderCircle, PlugZap, RotateCcw } from '@lucide/vue'
-import type { Probe, Provider, ProviderPatch, Setting } from '@opendesign/models'
-import { controls, defaults, pacing, providerKindLabel, schedule } from '@opendesign/models'
+import { ChevronDown, RotateCcw } from '@lucide/vue'
+import type { Model, Provider, ProviderPatch, Setting, Vendor } from '@opendesign/models'
 import {
-  Button,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-  cn,
-  Input,
-} from '@opendesign/shadcn'
+  controls,
+  defaults,
+  pacing,
+  providerKindLabel,
+  providerLabel,
+  schedule,
+  suggestions,
+  supports,
+} from '@opendesign/models'
+import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger, cn } from '@opendesign/shadcn'
 import { computed, ref } from 'vue'
 import Controls from '../form/Controls.vue'
 import Picker from '../form/Picker.vue'
 import Tip from '../layout/Tip.vue'
+import ModelPicker from './ModelPicker.vue'
 
-const props = defineProps<{ provider: Provider; probe?: Probe; testing?: boolean }>()
+const props = defineProps<{
+  provider: Provider
+  vendors: Vendor[]
+  models: Model[]
+  pending?: boolean
+  error?: string
+}>()
 
-const emit = defineEmits<{ patch: [patch: ProviderPatch]; test: [] }>()
+const emit = defineEmits<{ patch: [patch: ProviderPatch] }>()
 
-const NONE = 'none'
 const heading = 'text-muted-foreground mb-1 text-micro font-medium tracking-[0.12em] uppercase'
 
 const open = ref(false)
-const reveal = ref(false)
 
-const models = computed(() =>
-  Object.fromEntries(props.provider.models.map((model) => [model, model])),
+const vendor = computed(() => props.vendors.find((item) => item.id === props.provider.vendorId))
+
+const choices = computed<Record<string, string>>(() =>
+  Object.fromEntries(
+    props.vendors
+      .filter((item) => supports(item, props.provider.kind))
+      .map((item) => [item.id, item.name]),
+  ),
 )
 
-const fallbacks = computed(() => ({
-  [NONE]: '不启用',
-  ...Object.fromEntries(
-    props.provider.models
-      .filter((model) => model !== props.provider.active)
-      .map((model) => [model, model]),
-  ),
-}))
+const suggested = computed(() =>
+  vendor.value ? suggestions(vendor.value, props.provider.kind) : [],
+)
+
+const ready = computed(() => Boolean(vendor.value?.key && props.provider.active))
 
 const timing = computed(() => ({
   concurrency: props.provider.concurrency,
   retries: props.provider.retries,
 }))
 
-function field(name: 'endpoint' | 'key', event: Event) {
-  const value = (event.target as HTMLInputElement).value.trim()
+function choose(id: string) {
+  const next = props.vendors.find((item) => item.id === id)
+  if (!next || id === props.provider.vendorId) return
+  emit('patch', {
+    vendorId: id,
+    active: suggestions(next, props.provider.kind)[0] ?? '',
+    fallback: '',
+  })
+}
+
+function pick(name: 'active' | 'fallback', value: string) {
   if (value !== props.provider[name]) emit('patch', { [name]: value })
 }
 
@@ -69,21 +88,26 @@ function reset() {
           class="text-muted-foreground size-4 shrink-0 transition-transform duration-200 group-data-[state=closed]:-rotate-90"
         />
         <span class="min-w-0">
-          <span class="text-data block font-medium">{{ provider.label }}</span>
+          <span class="text-data block font-medium">{{ providerLabel[provider.kind] }}</span>
           <span class="text-muted-foreground mt-0.5 flex items-center gap-1.5 truncate text-micro">
             <span
-              :class="cn('size-1.5 shrink-0 rounded-full', provider.connected ? 'bg-success' : 'bg-container')"
+              :class="cn('size-1.5 shrink-0 rounded-full', ready ? 'bg-success' : 'bg-container')"
             />
-            {{ providerKindLabel[provider.kind] }} · {{ provider.connected ? '已连接' : '未连接' }}
+            {{ providerKindLabel[provider.kind] }} · {{ vendor?.name ?? '未选择厂商' }}
+            <template v-if="vendor && !vendor.key">· 未填密钥</template>
             <template v-if="provider.fallback">· 备用 {{ provider.fallback }}</template>
           </span>
         </span>
       </CollapsibleTrigger>
-      <Picker
-        class="w-48"
+      <ModelPicker
         :model-value="provider.active"
-        :options="models"
-        @update:model-value="emit('patch', { active: $event })"
+        :models="models"
+        :suggested="suggested"
+        :pending="pending"
+        :error="error"
+        :disabled="!vendor"
+        :placeholder="vendor ? '选择模型' : '先选择厂商'"
+        @update:model-value="pick('active', $event)"
       />
     </div>
 
@@ -92,45 +116,17 @@ function reset() {
         <section>
           <h4 :class="heading">接入</h4>
           <div class="grid items-center gap-x-4 gap-y-2 @md:grid-cols-[7rem_1fr]">
-            <label :for="`${provider.id}-endpoint`" class="text-data">服务地址</label>
-            <Input
-              :id="`${provider.id}-endpoint`"
-              :model-value="provider.endpoint"
-              placeholder="https://"
-              class="font-mono"
-              @change="field('endpoint', $event)"
+            <span class="text-data">厂商</span>
+            <Picker
+              :model-value="provider.vendorId ?? ''"
+              :options="choices"
+              placeholder="选择厂商"
+              @update:model-value="choose"
             />
-            <label :for="`${provider.id}-key`" class="text-data">密钥</label>
-            <div class="flex items-center gap-1">
-              <Input
-                :id="`${provider.id}-key`"
-                :type="reveal ? 'text' : 'password'"
-                :model-value="provider.key"
-                placeholder="粘贴 API Key"
-                autocomplete="off"
-                class="font-mono"
-                @change="field('key', $event)"
-              />
-              <Tip :label="reveal ? '隐藏密钥' : '显示密钥'">
-                <Button variant="ghost" size="icon-sm" @click="reveal = !reveal">
-                  <EyeOff v-if="reveal" />
-                  <Eye v-else />
-                </Button>
-              </Tip>
-              <Tip label="测试连接">
-                <Button variant="outline" size="icon-sm" :disabled="testing" @click="emit('test')">
-                  <LoaderCircle v-if="testing" class="animate-spin" />
-                  <PlugZap v-else />
-                </Button>
-              </Tip>
-            </div>
-            <template v-if="probe">
-              <span class="hidden @md:block" />
-              <p :class="cn('text-micro', probe.ok ? 'text-success' : 'text-destructive')">
-                {{ probe.message }}
-              </p>
-            </template>
           </div>
+          <p v-if="!Object.keys(choices).length" class="text-muted-foreground mt-2 text-micro">
+            还没有能做{{ providerKindLabel[provider.kind] }}生成的厂商，先在上方添加
+          </p>
         </section>
 
         <section>
@@ -144,13 +140,20 @@ function reset() {
             <div class="flex items-center gap-4 py-2.5">
               <div class="min-w-0 flex-1">
                 <p class="text-data">备用模型</p>
-                <p class="text-muted-foreground mt-0.5 text-micro">默认模型连续失败时自动切换</p>
+                <p class="text-muted-foreground mt-0.5 text-micro">
+                  默认模型失败时改用它重试，留空则不启用
+                </p>
               </div>
-              <Picker
-                class="w-48"
-                :model-value="provider.fallback || NONE"
-                :options="fallbacks"
-                @update:model-value="emit('patch', { fallback: $event === NONE ? '' : $event })"
+              <ModelPicker
+                :model-value="provider.fallback"
+                :models="models"
+                :suggested="suggested"
+                :pending="pending"
+                :error="error"
+                :disabled="!vendor"
+                placeholder="不启用"
+                optional
+                @update:model-value="pick('fallback', $event)"
               />
             </div>
           </div>

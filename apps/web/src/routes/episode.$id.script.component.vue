@@ -12,7 +12,7 @@ import {
 import { Button, cn } from '@opendesign/shadcn'
 import { useLocalStorage } from '@vueuse/core'
 import { computed } from 'vue'
-import { useWorkspace } from '../workspace'
+import { useWorkspace } from '../composables/workspace'
 
 const { episodeId, episode, seriesId } = useWorkspace()
 const { data: series } = useSeries(seriesId)

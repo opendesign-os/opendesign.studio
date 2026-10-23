@@ -4,8 +4,8 @@ import { clock } from '@opendesign/common'
 import { cn } from '@opendesign/shadcn'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import Tip from '../layout/Tip.vue'
-import type { Clip, Track } from '../types'
 import TimelineClip from './TimelineClip.vue'
+import type { Clip, Track } from './types'
 
 const props = defineProps<{
   tracks: Track[]

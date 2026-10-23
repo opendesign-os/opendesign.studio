@@ -11,9 +11,9 @@ import { Handle, MarkerType, Panel, Position, useVueFlow, VueFlow } from '@vue-f
 import '@vue-flow/core/dist/style.css'
 import { useLocalStorage } from '@vueuse/core'
 import { computed, nextTick, ref } from 'vue'
+import { relationColor } from '../common/tone'
 import Avatar from '../layout/Avatar.vue'
 import Tip from '../layout/Tip.vue'
-import { relationColor } from '../tone'
 import Bond from './Bond.vue'
 
 type Spot = { x: number; y: number }

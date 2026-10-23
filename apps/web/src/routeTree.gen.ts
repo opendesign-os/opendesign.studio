@@ -13,6 +13,7 @@ import { lazyRouteComponent } from '@tanstack/vue-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as EpisodeIdRouteImport } from './routes/episode.$id'
 import { Route as EpisodeIdIndexRouteImport } from './routes/episode.$id.index'
 import { Route as EpisodeIdCanvasRouteImport } from './routes/episode.$id.canvas'
@@ -37,6 +38,16 @@ const SplatRoute = SplatRouteImport.update({
 } as any).update({
   component: lazyRouteComponent(
     () => import('./routes/$.component.vue'),
+    'default',
+  ),
+})
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any).update({
+  component: lazyRouteComponent(
+    () => import('./routes/login.component.vue'),
     'default',
   ),
 })
@@ -104,6 +115,7 @@ const EpisodeIdScriptRoute = EpisodeIdScriptRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/login': typeof LoginRoute
   '/episode/$id': typeof EpisodeIdRouteWithChildren
   '/episode/$id/canvas': typeof EpisodeIdCanvasRoute
   '/episode/$id/cast': typeof EpisodeIdCastRoute
@@ -114,6 +126,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/login': typeof LoginRoute
   '/episode/$id/canvas': typeof EpisodeIdCanvasRoute
   '/episode/$id/cast': typeof EpisodeIdCastRoute
   '/episode/$id/edit': typeof EpisodeIdEditRoute
@@ -124,6 +137,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/login': typeof LoginRoute
   '/episode/$id': typeof EpisodeIdRouteWithChildren
   '/episode/$id/canvas': typeof EpisodeIdCanvasRoute
   '/episode/$id/cast': typeof EpisodeIdCastRoute
@@ -136,6 +150,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/login'
     | '/episode/$id'
     | '/episode/$id/canvas'
     | '/episode/$id/cast'
@@ -146,6 +161,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
+    | '/login'
     | '/episode/$id/canvas'
     | '/episode/$id/cast'
     | '/episode/$id/edit'
@@ -155,6 +171,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$'
+    | '/login'
     | '/episode/$id'
     | '/episode/$id/canvas'
     | '/episode/$id/cast'
@@ -166,6 +183,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  LoginRoute: typeof LoginRoute
   EpisodeIdRoute: typeof EpisodeIdRouteWithChildren
 }
 
@@ -183,6 +201,13 @@ declare module '@tanstack/vue-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/episode/$id': {
@@ -253,6 +278,7 @@ const EpisodeIdRouteWithChildren = EpisodeIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  LoginRoute: LoginRoute,
   EpisodeIdRoute: EpisodeIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
