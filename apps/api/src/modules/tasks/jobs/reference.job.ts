@@ -56,6 +56,7 @@ export class ReferenceJob implements Job {
       asset.prompt,
       `${viewLabel[view]}设定图：${views[view]}，纯净背景，光线均匀，便于后续作为参考。`,
       references.length ? '保持与参考图中的外观、服装和配色完全一致。' : '',
+      '画面里不要出现水印、签名或无关文字。',
     ]
       .filter(Boolean)
       .join('\n')

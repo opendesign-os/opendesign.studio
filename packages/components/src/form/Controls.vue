@@ -25,8 +25,7 @@ function pick(key: string, value: unknown) {
 }
 
 function write(key: string, raw: string) {
-  const value = raw.trim()
-  if (value) emit('change', key, value)
+  emit('change', key, raw.trim())
 }
 
 function type(control: Control & { type: 'number' }, raw: string) {
@@ -99,6 +98,7 @@ function type(control: Control & { type: 'number' }, raw: string) {
         v-else
         class="w-36 font-mono"
         :model-value="String(read(control))"
+        :placeholder="control.placeholder"
         @change="write(control.key, ($event.target as HTMLInputElement).value)"
       />
     </div>

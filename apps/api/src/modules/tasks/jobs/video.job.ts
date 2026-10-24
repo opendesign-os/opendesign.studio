@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDrizzle } from '@nestjs/drizzle'
-import { cameraLabel, easingLabel, shotSizeLabel } from '@opendesign/models'
-import { episodes, series, shots } from '@opendesign/schemas'
+import { cameraLabel, easingLabel, emotionLabel, shotSizeLabel } from '@opendesign/models'
+import { assets, episodes, series, shots } from '@opendesign/schemas'
 import { experimental_generateVideo as generateVideo } from 'ai'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import type { Database } from '../../../common/database/database.module'
 import { StorageService } from '../../../common/storage/storage.service'
 import { attempt } from '../../providers/attempt'
@@ -37,6 +37,19 @@ export class VideoJob implements Job {
       return image ? [{ slot, image }] : []
     })
     if (keys[0]?.slot !== 'first') throw new Error('先生成首帧')
+    const speaking = shot.dialogue.filter((item) => item.assetId && item.line.trim())
+    const speakers = speaking.length
+      ? await this.db
+          .select({ id: assets.id, name: assets.name })
+          .from(assets)
+          .where(
+            inArray(
+              assets.id,
+              speaking.map((item) => item.assetId),
+            ),
+          )
+      : []
+    const names = new Map(speakers.map((item) => [item.id, item.name]))
 
     await this.db.update(shots).set({ status: 'generating' }).where(eq(shots.id, shot.id))
     try {
@@ -45,9 +58,22 @@ export class VideoJob implements Job {
       await progress(10)
 
       const quality = settings.params.resolution
+      const span = protocols.duration(settings.protocol, shot.duration)
       const prompt = [
         shot.prompt.replaceAll('@', ''),
         `${shotSizeLabel[shot.size]}，运镜「${cameraLabel[shot.move.kind]}」，${easingLabel[shot.move.easing]}。`,
+        keys.length > 1
+          ? `${span} 秒内从首帧演到尾帧，动作连贯自然。`
+          : `${span} 秒内保持连续运动。`,
+        '人物要有呼吸、眨眼和重心变化，衣料、发丝与环境里的光线、雨雾、烟尘持续流动；不要定格，不要只做缓慢缩放。',
+        ...speaking.flatMap((item) => {
+          const name = names.get(item.assetId)
+          return name
+            ? [
+                `${name}开口说话，语气${emotionLabel[item.emotion]}，口型与台词同步：「${item.line}」`,
+              ]
+            : []
+        }),
       ].join('\n')
       const { video } = await attempt(settings, (model) =>
         generateVideo({
@@ -59,9 +85,10 @@ export class VideoJob implements Job {
           })),
           aspectRatio: 'adaptive',
           resolution: frame(aspect, quality),
-          duration: shot.duration <= 5 ? 5 : 10,
+          duration: span,
           providerOptions: { klingai: { mode: quality === '720p' ? 'std' : 'pro' } },
           poll: { timeoutMs: TIMEOUT },
+          download: protocols.download,
           abortSignal: signal,
         }),
       )

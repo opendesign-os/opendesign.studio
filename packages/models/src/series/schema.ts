@@ -17,7 +17,8 @@ export const episode = z.object({
   shots: z.number().int().nonnegative(),
   done: z.number().int().nonnegative(),
   status: episodeStatus,
-  output: z.string().optional(),
+  landscape: z.string().optional(),
+  portrait: z.string().optional(),
 })
 
 export const series = z.object({

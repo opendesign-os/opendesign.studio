@@ -1,5 +1,5 @@
 {
-  "id": "0be6670e-fd89-430f-a2f1-6299a3faf25c",
+  "id": "e9fc0b14-8448-45a3-a3a9-3d3991eded36",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1291,8 +1291,14 @@
           "notNull": true,
           "default": "''"
         },
-        "output": {
-          "name": "output",
+        "landscape": {
+          "name": "landscape",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "portrait": {
+          "name": "portrait",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1577,27 +1583,6 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
-        "bubbles": {
-          "name": "bubbles",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
-        "effects": {
-          "name": "effects",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
-        "sounds": {
-          "name": "sounds",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true,

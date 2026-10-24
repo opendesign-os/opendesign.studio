@@ -14,35 +14,15 @@ export const shotStatus = z.enum([
   'keyframe',
   'generating',
   'review',
-  'voiced',
   'composed',
   'failed',
 ])
 
 export const emotion = z.enum(['calm', 'happy', 'angry', 'sad', 'tense', 'whisper'])
 
-export const bubbleShape = z.enum(['speech', 'thought', 'shout', 'caption'])
-
-export const effectStyle = z.enum(['impact', 'soft', 'speed', 'glow'])
-
 export const transition = z.enum(['cut', 'fade', 'wipe', 'flash', 'slide'])
 
 export const plane = z.enum(['back', 'mid', 'fore'])
-
-export const foleyKind = z.enum([
-  'rain',
-  'wind',
-  'crowd',
-  'train',
-  'fire',
-  'water',
-  'footsteps',
-  'heartbeat',
-  'door',
-  'glass',
-  'bell',
-  'rumble',
-])
 
 export const slot = z.enum(['first', 'last'])
 
@@ -83,36 +63,6 @@ export const dialogue = z.object({
   emotion,
   start: z.number().nonnegative(),
   duration: z.number().positive(),
-  audio: z.string().optional(),
-})
-
-export const bubble = z.object({
-  id: z.string(),
-  assetId: z.string(),
-  text: z.string().min(1),
-  x: z.number().min(0).max(100),
-  y: z.number().min(0).max(100),
-  shape: bubbleShape,
-  start: z.number().nonnegative(),
-  duration: z.number().positive(),
-})
-
-export const effect = z.object({
-  id: z.string(),
-  text: z.string().min(1),
-  x: z.number().min(0).max(100),
-  y: z.number().min(0).max(100),
-  style: effectStyle,
-  start: z.number().nonnegative(),
-  duration: z.number().positive(),
-})
-
-export const sound = z.object({
-  id: z.string(),
-  kind: foleyKind,
-  name: z.string(),
-  start: z.number().nonnegative(),
-  duration: z.number().positive(),
 })
 
 export const shot = z.object({
@@ -127,9 +77,6 @@ export const shot = z.object({
   cast: z.array(z.string()),
   keyframes: z.array(keyframe),
   dialogue: z.array(dialogue),
-  bubbles: z.array(bubble),
-  effects: z.array(effect),
-  sounds: z.array(sound),
   transition,
   duration: z.number().min(MIN_DURATION).max(MAX_DURATION, `单镜头最长 ${MAX_DURATION} 秒`),
   status: shotStatus,
@@ -154,11 +101,8 @@ export type Camera = z.infer<typeof camera>
 export type Easing = z.infer<typeof easing>
 export type ShotStatus = z.infer<typeof shotStatus>
 export type Emotion = z.infer<typeof emotion>
-export type BubbleShape = z.infer<typeof bubbleShape>
-export type EffectStyle = z.infer<typeof effectStyle>
 export type Transition = z.infer<typeof transition>
 export type Plane = z.infer<typeof plane>
-export type FoleyKind = z.infer<typeof foleyKind>
 export type Slot = z.infer<typeof slot>
 export type Frame = z.infer<typeof frame>
 export type Point = z.infer<typeof point>
@@ -166,9 +110,6 @@ export type Move = z.infer<typeof move>
 export type Layer = z.infer<typeof layer>
 export type Keyframe = z.infer<typeof keyframe>
 export type Dialogue = z.infer<typeof dialogue>
-export type Bubble = z.infer<typeof bubble>
-export type Effect = z.infer<typeof effect>
-export type Sound = z.infer<typeof sound>
 export type Shot = z.infer<typeof shot>
 export type ShotDraft = z.infer<typeof shotDraft>
 export type ShotPatch = z.infer<typeof shotPatch>

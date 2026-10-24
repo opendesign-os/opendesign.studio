@@ -28,7 +28,7 @@
 - 页面只通过 `@opendesign/queries` 读写，请求统一走 `common/api.ts`（ofetch）。查询键集中在 `packages/queries/src/common/cache.ts` 的 `keys`，缓存失效统一用 `useInvalidate()`。
 - 登录状态只以 better-auth 的 `auth.useSession()` 为准：根路由据此在登录页与工作区之间跳转，接口返回 401 时通知 better-auth 刷新会话（`auth.$store.notify('$sessionSignal')`），不另做判断。
 - 更新统一走 `patchXxx(id, patch)`，`XxxPatch` 由模型类型推导。修改类 mutation 由 `usePatch()` 生成：自带乐观更新，并在最后一个并发请求结束后才统一刷新，拖拽松手不会先渲染旧数据再跳变。TanStack Query 的通知改为 `queueMicrotask` 调度。
-- 生成类操作（剧本拆解、参考图、关键帧、视频、配音、合成出片）统一提交任务：`useCreateTask().mutate({ kind, ... })`，请求结构见模型里的 `TaskRequest`。生成后的素材在模型里只存对象存储的 key，界面用 `media(key)` 得到地址（`/api/media/...` 鉴权后跳转到预签名链接）。任务进行中时任务列表自动轮询，任务结束后刷新受影响的数据。
+- 生成类操作（剧本拆解、参考图、关键帧、视频、合成出片、整集生成）统一提交任务：`useCreateTask().mutate({ kind, ... })`，请求结构见模型里的 `TaskRequest`。生成后的素材在模型里只存对象存储的 key，界面用 `media(key)` 得到地址（`/api/media/...` 鉴权后跳转到预签名链接）。任务进行中时任务列表自动轮询，任务结束后刷新受影响的数据。
 
 ## 路由与状态
 
@@ -42,7 +42,7 @@
 - 请求参数用 `@opendesign/models` 里的同一份 zod 模型校验：`@Body({ schema })`、`@Query('x', { schema })`，路径 id 用 `@Id()`；业务数据一律按团队隔离，用 `@Tenant()` 取当前团队。
 - 认证由 better-auth 挂在 `/api/auth/*`，其余接口默认需要登录；新用户注册时自动创建个人团队。
 - 服务层方法统一为 `list` `find` `create` `update` `remove`，接口按资源平铺：`GET /api/assets?seriesId=`、`POST /api/assets`、`PATCH /api/assets/:id`、`DELETE /api/assets/:id`。
-- 生成任务：写任务行与入队在同一事务里完成（pg-boss 的 `fromDrizzle`），按能力分队列（text / image / video / voice / compose），团队并发上限用 pg-boss 的分组配额，重试次数取模型配置。每一步是 `modules/tasks/jobs` 下的一个 `*.job.ts`，模型调用统一走 Vercel AI SDK，厂商到 provider 的映射集中在 `modules/providers/vendors.ts`；新增厂商时只改这里和 `packages/models` 的 `vendors`。
+- 生成任务：写任务行与入队在同一事务里完成（pg-boss 的 `fromDrizzle`），按能力分队列（text / image / video / compose），团队并发上限用 pg-boss 的本地分组配额（`localGroupConcurrency`，在单个进程内精确计数；全局配额在多个执行者同时取任务时会超发），重试次数取模型配置。每一步是 `modules/tasks/jobs` 下的一个 `*.job.ts`，模型调用统一走 Vercel AI SDK。`episode.job.ts` 是编排作业：它不自己调模型，而是按资产→参考图→首尾帧→视频→合成的依赖分阶段创建子任务并轮询等待，已完成的步骤跳过，所以中断后重跑只补缺口；它有独立队列，不占用图像和视频的执行者。厂商（`vendors`，团队的接入账号）和能力配置（`providers`，每类任务用哪个厂商的哪个模型）分开存；接口类型到 AI SDK provider 的映射和模型列表拉取集中在 `modules/vendors/protocols.ts`；没有现成 provider 的接口（如 MiniMax 的图片与视频）按 AI SDK 的 `ImageModelV4` / `VideoModelV4` 实现成适配，放在同目录下（`minimax.ts`），任务代码不感知差异。厂商返回的视频链接用 `protocols.download` 直接下载，不走 AI SDK 默认下载的内网地址校验：开着 fake-IP 代理的开发机会把公网域名解析到 `198.18.0.0/15` 而被误拦；公开部署时在网络层限制服务端出口。新增预设厂商只在 `packages/models` 的 `vendor/presets.ts` 里加一项；新增接口类型时再改 `protocol` 枚举、`abilities` 和 `protocols.ts`。
 - 素材读写走 `common/storage`（S3 兼容），key 按团队前缀存放，`GET /api/media/:owner/:file` 校验团队后跳转到预签名链接。
 
 ## 界面

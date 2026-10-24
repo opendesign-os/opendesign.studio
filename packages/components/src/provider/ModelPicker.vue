@@ -74,7 +74,7 @@ function clear() {
     </ComboboxAnchor>
 
     <ComboboxList align="end" class="w-80">
-      <ComboboxInput v-model="search" placeholder="搜索或输入模型 ID" />
+      <ComboboxInput v-model="search" :display-value="() => ''" placeholder="搜索或输入模型 ID" />
       <ComboboxViewport>
         <p
           v-if="pending"
@@ -91,7 +91,7 @@ function clear() {
           <ComboboxItem v-for="model in group.models" :key="model.id" :value="model.id">
             <span class="min-w-0 flex-1 truncate font-mono">{{ model.id }}</span>
             <span
-              v-if="model.name && model.name !== model.id"
+              v-if="model.name && model.name.toLowerCase() !== model.id.toLowerCase()"
               class="text-muted-foreground max-w-28 truncate text-micro"
             >
               {{ model.name }}

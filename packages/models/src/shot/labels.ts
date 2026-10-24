@@ -1,10 +1,7 @@
 import type {
-  BubbleShape,
   Camera,
   Easing,
-  EffectStyle,
   Emotion,
-  FoleyKind,
   Plane,
   ShotSize,
   ShotStatus,
@@ -42,13 +39,6 @@ export const planeLabel: Record<Plane, string> = {
   fore: '前景',
 }
 
-export const effectStyleLabel: Record<EffectStyle, string> = {
-  impact: '冲击',
-  soft: '轻柔',
-  speed: '速度线',
-  glow: '发光',
-}
-
 export const transitionLabel: Record<Transition, string> = {
   cut: '硬切',
   fade: '淡入淡出',
@@ -62,7 +52,6 @@ export const shotStatusLabel: Record<ShotStatus, string> = {
   keyframe: '待生成',
   generating: '生成中',
   review: '待审',
-  voiced: '已配音',
   composed: '已合成',
   failed: '失败',
 }
@@ -74,28 +63,6 @@ export const emotionLabel: Record<Emotion, string> = {
   sad: '难过',
   tense: '紧张',
   whisper: '耳语',
-}
-
-export const bubbleShapeLabel: Record<BubbleShape, string> = {
-  speech: '对话',
-  thought: '心声',
-  shout: '呐喊',
-  caption: '旁白',
-}
-
-export const foleyLabel: Record<FoleyKind, string> = {
-  rain: '雨声',
-  wind: '风声',
-  crowd: '人群嘈杂',
-  train: '列车进站',
-  fire: '灶火噼啪',
-  water: '流水',
-  footsteps: '脚步',
-  heartbeat: '心跳',
-  door: '开关门',
-  glass: '玻璃碎裂',
-  bell: '钟声',
-  rumble: '低频轰鸣',
 }
 
 export const slotLabel: Record<Slot, string> = {

@@ -46,6 +46,10 @@ const suggested = computed(() =>
   vendor.value ? suggestions(vendor.value, props.provider.kind) : [],
 )
 
+const listed = computed(() =>
+  props.models.filter((item) => !item.kind || item.kind === props.provider.kind),
+)
+
 const ready = computed(() => Boolean(vendor.value?.key && props.provider.active))
 
 const timing = computed(() => ({
@@ -101,7 +105,7 @@ function reset() {
       </CollapsibleTrigger>
       <ModelPicker
         :model-value="provider.active"
-        :models="models"
+        :models="listed"
         :suggested="suggested"
         :pending="pending"
         :error="error"
@@ -146,7 +150,7 @@ function reset() {
               </div>
               <ModelPicker
                 :model-value="provider.fallback"
-                :models="models"
+                :models="listed"
                 :suggested="suggested"
                 :pending="pending"
                 :error="error"

@@ -18,6 +18,11 @@ const fields = {
     ),
 }
 
+const titles: Partial<Record<TaskKind, string>> = {
+  script: ' · 剧本拆解',
+  episode: ' · 整集生成',
+}
+
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 
 type Schedule = { concurrency: number; retries: number }
@@ -99,7 +104,7 @@ export class TasksService {
 
   private settings(tenant: string, kind: TaskKind) {
     const lane = lanes[kind]
-    return lane === 'compose' ? undefined : this.providers.find(tenant, lane)
+    return lane === 'compose' || lane === 'episode' ? undefined : this.providers.find(tenant, lane)
   }
 
   private async enqueue(
@@ -137,7 +142,7 @@ export class TasksService {
       }
     }
 
-    if (request.kind === 'script' || request.kind === 'compose') {
+    if (request.kind === 'script' || request.kind === 'compose' || request.kind === 'episode') {
       const episode = await one(
         this.db
           .select({
@@ -152,10 +157,7 @@ export class TasksService {
         '分集',
       )
       return {
-        title:
-          request.kind === 'script'
-            ? `第 ${episode.index} 集 · 剧本拆解`
-            : `${episode.name} 第 ${episode.index} 集`,
+        title: `${episode.name} 第 ${episode.index} 集${titles[request.kind] ?? ''}`,
         seriesId: episode.seriesId,
         episodeId: episode.id,
       }

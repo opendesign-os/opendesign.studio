@@ -63,7 +63,11 @@ export class KeyframeJob implements Job {
       shot.prompt.replaceAll('@', ''),
       `${shotSizeLabel[shot.size]}，运镜「${cameraLabel[shot.move.kind]}」的${slotLabel[slot]}：${framing(slot === 'first' ? shot.move.from : shot.move.to)}。`,
       ...cast.map((item) => `${item.name}：${item.prompt}`),
+      slot === 'last'
+        ? '这是同一个镜头结束的一刻：在首帧基础上只推进一个小动作（抬头、转眼神、抬手、表情变化），人物站位与朝向基本不变，不要转身、不要走出画面、不要重新构图；发型、服装、道具、环境与光线与首帧完全一致。'
+        : '',
       references.length ? '人物与场景外观和参考图保持一致。' : '',
+      '画面里不要出现水印、签名或无关文字。',
     ]
       .filter(Boolean)
       .join('\n')

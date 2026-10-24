@@ -1,15 +1,4 @@
-import { voiceLabel } from '../asset/labels'
-import type { Voice } from '../asset/schema'
-import { voice } from '../asset/schema'
 import type { Control, ProviderKind, Setting } from './schema'
-
-const timbres: Record<Voice, string> = {
-  'warm-male': 'ash',
-  'bright-female': 'nova',
-  'low-male': 'onyx',
-  'soft-female': 'shimmer',
-  narrator: 'sage',
-}
 
 export const controls: Record<ProviderKind, Control[]> = {
   text: [
@@ -43,7 +32,7 @@ export const controls: Record<ProviderKind, Control[]> = {
     {
       key: 'resolution',
       label: '分辨率',
-      hint: '火山方舟按画幅与档位换算像素，OpenAI 按画幅取最接近的尺寸',
+      hint: '按画幅与档位换算像素；OpenAI 取最接近的固定尺寸，MiniMax 最长边不超过 2048',
       type: 'choice',
       options: { '1K': '1K', '2K': '2K', '4K': '4K' },
       value: '2K',
@@ -66,34 +55,6 @@ export const controls: Record<ProviderKind, Control[]> = {
       options: { '720p': '720p', '1080p': '1080p' },
       value: '1080p',
     },
-  ],
-  voice: [
-    {
-      key: 'speed',
-      label: '语速',
-      type: 'range',
-      min: 0.5,
-      max: 2,
-      step: 0.05,
-      value: 1,
-      unit: '×',
-    },
-    {
-      key: 'emotion',
-      label: '情绪强度',
-      hint: '写进朗读指令，支持指令的模型才会生效',
-      type: 'range',
-      min: 0,
-      max: 1,
-      step: 0.1,
-      value: 0.6,
-    },
-    ...voice.options.map((name) => ({
-      key: `voice:${name}`,
-      label: `${voiceLabel[name]} · 音色`,
-      type: 'text' as const,
-      value: timbres[name],
-    })),
   ],
 }
 

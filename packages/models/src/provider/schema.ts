@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const providerKind = z.enum(['text', 'image', 'video', 'voice'])
+export const providerKind = z.enum(['text', 'image', 'video'])
 
 export const setting = z.union([z.number(), z.string(), z.boolean()])
 
@@ -30,5 +30,5 @@ export type Control = Base &
     | { type: 'choice'; options: Record<string, string>; value: string }
     | { type: 'toggle'; value: boolean }
     | { type: 'number'; min: number; max: number; value: number }
-    | { type: 'text'; value: string }
+    | { type: 'text'; value: string; placeholder?: string }
   )

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { providerKind } from '../provider/schema'
 
 export const protocol = z.enum([
   'anthropic',
@@ -7,6 +8,7 @@ export const protocol = z.enum([
   'bytedance',
   'klingai',
   'alibaba',
+  'minimax',
 ])
 
 export const preset = z.enum([
@@ -37,7 +39,11 @@ export const vendor = z.object({
 export const vendorDraft = vendor.omit({ id: true })
 export const vendorPatch = vendorDraft.omit({ preset: true }).partial()
 
-export const model = z.object({ id: z.string(), name: z.string().optional() })
+export const model = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  kind: providerKind.optional(),
+})
 
 export type Protocol = z.infer<typeof protocol>
 export type Preset = z.infer<typeof preset>

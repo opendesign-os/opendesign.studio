@@ -7,11 +7,11 @@ import { type JobWithMetadata, PgBoss } from 'pg-boss'
 import type { Database } from '../../common/database/database.module'
 import { ComposeJob } from './jobs/compose.job'
 import type { Job, Task } from './jobs/context'
+import { EpisodeJob } from './jobs/episode.job'
 import { KeyframeJob } from './jobs/keyframe.job'
 import { ReferenceJob } from './jobs/reference.job'
 import { ScriptJob } from './jobs/script.job'
 import { VideoJob } from './jobs/video.job'
-import { VoiceJob } from './jobs/voice.job'
 import { queues, tiers } from './queues'
 
 type Payload = { taskId: string }
@@ -31,10 +31,10 @@ export class TasksWorker implements OnApplicationBootstrap {
     reference: ReferenceJob,
     keyframe: KeyframeJob,
     video: VideoJob,
-    voice: VoiceJob,
     compose: ComposeJob,
+    episode: EpisodeJob,
   ) {
-    this.jobs = { script, image: reference, keyframe, video, voice, compose }
+    this.jobs = { script, episode, image: reference, keyframe, video, compose }
   }
 
   async onApplicationBootstrap() {
@@ -47,7 +47,7 @@ export class TasksWorker implements OnApplicationBootstrap {
         {
           includeMetadata: true,
           localConcurrency: queue.workers,
-          groupConcurrency: { default: 1, tiers },
+          localGroupConcurrency: { default: 1, tiers: tiers(queue.workers) },
         },
         async ([job]: JobWithMetadata<Payload>[]) => {
           if (job) await this.handle(job)

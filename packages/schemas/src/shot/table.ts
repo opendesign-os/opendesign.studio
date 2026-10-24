@@ -1,13 +1,4 @@
-import type {
-  Bubble,
-  Dialogue,
-  Effect,
-  Keyframe,
-  Layer,
-  Move,
-  Point,
-  Sound,
-} from '@opendesign/models'
+import type { Dialogue, Keyframe, Layer, Move, Point } from '@opendesign/models'
 import { shotSize, shotStatus, transition } from '@opendesign/models'
 import { index, integer, jsonb, real, text, uuid } from 'drizzle-orm/pg-core'
 import { tenant } from '../auth/table'
@@ -30,9 +21,6 @@ export const shots = createTable(
     cast: jsonb('cast').$type<string[]>().notNull().default([]),
     keyframes: jsonb('keyframes').$type<Keyframe[]>().notNull(),
     dialogue: jsonb('dialogue').$type<Dialogue[]>().notNull().default([]),
-    bubbles: jsonb('bubbles').$type<Bubble[]>().notNull().default([]),
-    effects: jsonb('effects').$type<Effect[]>().notNull().default([]),
-    sounds: jsonb('sounds').$type<Sound[]>().notNull().default([]),
     transition: choice('transition', transition.options).notNull().default('cut'),
     duration: real('duration').notNull(),
     status: choice('status', shotStatus.options).notNull().default('draft'),

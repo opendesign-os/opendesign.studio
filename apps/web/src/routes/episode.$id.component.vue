@@ -7,17 +7,16 @@ import {
   ListChecks,
   LoaderCircle,
   Network,
-  PlayCircle,
   Send,
   Settings,
   Table2,
+  Wand2,
   Workflow,
 } from '@lucide/vue'
 import { Avatar, Modal, Tip } from '@opendesign/components'
 import type { Task } from '@opendesign/models'
 import { live, ready, resume } from '@opendesign/models'
 import {
-  media,
   useAssets,
   useCandidates,
   useCreateTask,
@@ -238,7 +237,11 @@ function jump(task: Task) {
             </span>
           </PopoverAnchor>
           <PopoverContent align="end" class="w-96 p-0">
-            <Tasks @open="jump" />
+            <Tasks
+              :busy="render.isPending.value"
+              @open="jump"
+              @generate="render.mutate({ kind: 'episode', episodeId })"
+            />
           </PopoverContent>
         </Popover>
         <Tip label="设置">
@@ -246,11 +249,14 @@ function jump(task: Task) {
             <Settings />
           </Button>
         </Tip>
-        <Tip v-if="episode?.output" label="查看成片">
-          <Button variant="ghost" size="icon-sm" as-child>
-            <a :href="media(episode.output)" target="_blank" rel="noreferrer">
-              <PlayCircle />
-            </a>
+        <Tip label="一键生成整集：补齐资产参考图、首尾帧、视频，最后合成横屏与竖屏两版">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            :disabled="render.isPending.value || !rows.length"
+            @click="render.mutate({ kind: 'episode', episodeId })"
+          >
+            <Wand2 />
           </Button>
         </Tip>
         <Tip :label="`整集提交出片 · ${runnable}/${rows.length} 个镜头就绪`">

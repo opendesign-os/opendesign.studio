@@ -7,4 +7,5 @@ export const protocolLabel: Record<Protocol, string> = {
   bytedance: '火山方舟',
   klingai: '可灵',
   alibaba: '阿里云百炼',
+  minimax: 'MiniMax',
 }

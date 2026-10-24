@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import { Wand2 } from '@lucide/vue'
 import { duration } from '@opendesign/common'
-import { TaskRow } from '@opendesign/components'
+import { TaskRow, Tip } from '@opendesign/components'
 import type { Task } from '@opendesign/models'
 import { live } from '@opendesign/models'
 import { useCancelTask, useRetryTask, useTasks } from '@opendesign/queries'
-import { Skeleton, ToggleGroup, ToggleGroupItem } from '@opendesign/shadcn'
+import { Button, Skeleton, ToggleGroup, ToggleGroupItem } from '@opendesign/shadcn'
 import { computed, ref } from 'vue'
 
-const emit = defineEmits<{ open: [task: Task] }>()
+const props = defineProps<{ busy?: boolean }>()
+
+const emit = defineEmits<{ open: [task: Task]; generate: [] }>()
 
 const { data: tasks, isPending } = useTasks()
 const cancel = useCancelTask()
@@ -31,6 +34,11 @@ const rows = computed(() => scopes.value.find((item) => item.id === scope.value)
   <div class="flex max-h-[min(32rem,70vh)] flex-col">
     <header class="border-border flex items-center gap-2 border-b py-2 pr-2 pl-3">
       <h2 class="text-data font-semibold">任务</h2>
+      <Tip label="一键生成整集">
+        <Button variant="ghost" size="icon-sm" :disabled="props.busy" @click="emit('generate')">
+          <Wand2 />
+        </Button>
+      </Tip>
       <ToggleGroup
         type="single"
         size="sm"

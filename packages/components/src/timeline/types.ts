@@ -9,7 +9,7 @@ export type Span = {
 export type Clip = {
   id: string
   name: string
-  kind: 'film' | 'text' | 'effect' | 'audio'
+  kind: 'film' | 'audio'
   start: number
   duration: number
   badge?: string

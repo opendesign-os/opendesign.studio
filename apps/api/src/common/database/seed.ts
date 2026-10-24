@@ -92,7 +92,6 @@ async function seed() {
         episodeId: id(item.episodeId),
         cast: item.cast.map(id),
         dialogue: item.dialogue.map((line) => ({ ...line, assetId: id(line.assetId) })),
-        bubbles: item.bubbles.map((bubble) => ({ ...bubble, assetId: id(bubble.assetId) })),
         organizationId,
       })),
     )

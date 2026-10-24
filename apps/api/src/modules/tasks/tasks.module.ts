@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common'
+import { CandidatesModule } from '../candidates/candidates.module'
 import { ProvidersModule } from '../providers/providers.module'
 import { ComposeJob } from './jobs/compose.job'
+import { EpisodeJob } from './jobs/episode.job'
 import { KeyframeJob } from './jobs/keyframe.job'
 import { ReferenceJob } from './jobs/reference.job'
 import { ScriptJob } from './jobs/script.job'
 import { VideoJob } from './jobs/video.job'
-import { VoiceJob } from './jobs/voice.job'
 import { TasksController } from './tasks.controller'
 import { TasksService } from './tasks.service'
 import { TasksWorker } from './tasks.worker'
 
 @Module({
-  imports: [ProvidersModule],
+  imports: [ProvidersModule, CandidatesModule],
   controllers: [TasksController],
   providers: [
     TasksService,
@@ -20,8 +21,8 @@ import { TasksWorker } from './tasks.worker'
     ReferenceJob,
     KeyframeJob,
     VideoJob,
-    VoiceJob,
     ComposeJob,
+    EpisodeJob,
   ],
 })
 export class TasksModule {}

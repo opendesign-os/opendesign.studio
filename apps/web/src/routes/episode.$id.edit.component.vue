@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  AudioLines,
   Captions,
   Check,
   ChevronLeft,
@@ -16,14 +15,14 @@ import {
   ListChecks,
   Magnet,
   Maximize,
-  MessageSquare,
-  Mic,
   Minus,
-  Music,
   PanelRightClose,
   PanelRightOpen,
   Play,
+  PlayCircle,
   Plus,
+  RectangleHorizontal,
+  RectangleVertical,
   Redo2,
   Scissors,
   Search,
@@ -32,23 +31,21 @@ import {
   Sparkles,
   Timer,
   Trash2,
-  Type,
   Undo2,
   Users,
   Video,
-  Zap,
+  Wand2,
 } from '@lucide/vue'
 import { tenth } from '@opendesign/common'
 import {
   type Action,
+  Brief,
   Checklist,
-  cover,
   type Destination,
   Elements,
   Format,
   Gallery,
   Layers,
-  Lettering,
   Library,
   Motion,
   Palette,
@@ -56,10 +53,9 @@ import {
   Presets,
   Preview,
   Prompt,
+  poster,
   Rail,
   Section,
-  ShotForm,
-  Soundboard,
   Stage,
   Status,
   Timeline,
@@ -69,29 +65,22 @@ import {
   Transport,
   tones,
 } from '@opendesign/components'
-import { type Cue, useHistory, useMixer, useTheme } from '@opendesign/composables'
+import { useHistory, useTheme } from '@opendesign/composables'
 import type {
   Aspect,
-  BubbleShape,
   Camera,
-  EffectStyle,
-  FoleyKind,
   Frame,
   Placement,
-  Shot,
-  ShotDraft,
   ShotPatch,
   ShotStatus,
   Slot,
 } from '@opendesign/models'
 import {
-  foley,
   formats,
   locate,
   MAX_DURATION,
   MIN_DURATION,
   moves,
-  onomatopoeia,
   readiness,
   sequence,
   transitionLabel,
@@ -109,6 +98,10 @@ import {
 import {
   Button,
   cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Input,
   ResizableHandle,
   ResizablePanel,
@@ -133,10 +126,8 @@ import {
 import { computed, ref, watch } from 'vue'
 import { dialog, useWorkspace } from '../composables/workspace'
 
-type Key = 'bubbles' | 'effects' | 'dialogue' | 'sounds'
+type Key = 'dialogue'
 type Owner = { placement: Placement; key: Key | null; start: number; end: number }
-type Spot = { value: Shot; at: number; room: number }
-
 const FRAME = 1 / 30
 
 const toggled = 'size-8 min-w-0 px-0 aria-pressed:bg-selection/10 aria-pressed:text-selection'
@@ -149,7 +140,7 @@ const search = useSearch({ from: '/episode/$id/edit' })
 const router = useRouter()
 const { dark } = useTheme()
 
-const { episodeId, seriesId } = useWorkspace()
+const { episodeId, episode, seriesId } = useWorkspace()
 const { data: series } = useSeries(seriesId)
 const { data: assets } = useAssets(seriesId)
 const { data: list } = useShots(episodeId)
@@ -191,18 +182,9 @@ const placement = computed(() => placements.value.find((item) => item.shot.id ==
 const current = computed(() => locate(placements.value, time.value))
 const local = computed(() => (current.value ? time.value - current.value.start : 0))
 const size = computed(() => (series.value ? formats[series.value.aspect] : null))
-const roster = computed(() => new Map(library.value.map((item) => [item.id, item])))
 const checks = computed(() => (shot.value ? readiness(shot.value, library.value) : []))
 
-const staged = computed(() => {
-  const value = current.value?.shot
-  if (!value) return null
-  return {
-    ...value,
-    bubbles: hidden.value.includes('text') ? [] : value.bubbles,
-    effects: hidden.value.includes('effect') ? [] : value.effects,
-  }
-})
+const staged = computed(() => current.value?.shot ?? null)
 
 const framing = computed(
   () => tab.value === 'frame' && selected.value === null && current.value?.shot.id === shotId.value,
@@ -219,7 +201,7 @@ const owners = computed(() => {
   const map = new Map<string, Owner>()
   for (const item of placements.value) {
     map.set(item.shot.id, { placement: item, key: null, start: item.start, end: item.end })
-    for (const key of ['bubbles', 'effects', 'dialogue', 'sounds'] as const) {
+    for (const key of ['dialogue'] as const) {
       for (const part of item.shot[key]) {
         const start = item.start + part.start
         map.set(part.id, { placement: item, key, start, end: start + part.duration })
@@ -229,18 +211,6 @@ const owners = computed(() => {
   return map
 })
 
-const lines = computed(() =>
-  placements.value.flatMap(({ shot: value, start }) =>
-    value.dialogue.map((item) => ({
-      id: item.id,
-      index: value.index,
-      assetId: item.assetId,
-      line: item.line,
-      start: start + item.start,
-    })),
-  ),
-)
-
 const tracks = computed<Track[]>(() => {
   const rows = placements.value
   const flags = (id: string) => ({
@@ -248,38 +218,6 @@ const tracks = computed<Track[]>(() => {
     locked: locked.value.includes(id),
   })
   return [
-    {
-      id: 'text',
-      label: '气泡',
-      icon: MessageSquare,
-      kind: 'text',
-      ...flags('text'),
-      clips: rows.flatMap(({ shot: value, start }) =>
-        value.bubbles.map((item) => ({
-          id: item.id,
-          name: item.text,
-          kind: 'text' as const,
-          start: start + item.start,
-          duration: item.duration,
-        })),
-      ),
-    },
-    {
-      id: 'effect',
-      label: '特效字',
-      icon: Zap,
-      kind: 'effect',
-      ...flags('effect'),
-      clips: rows.flatMap(({ shot: value, start }) =>
-        value.effects.map((item) => ({
-          id: item.id,
-          name: item.text,
-          kind: 'effect' as const,
-          start: start + item.start,
-          duration: item.duration,
-        })),
-      ),
-    },
     {
       id: 'film',
       label: '画面',
@@ -294,9 +232,9 @@ const tracks = computed<Track[]>(() => {
         kind: 'film' as const,
         start,
         duration: value.duration,
-        cover: cover(value, dark.value),
+        cover: poster(value, dark.value),
         tone: tones.shot[value.status],
-        audio: [...value.dialogue, ...value.sounds].map((part) => ({
+        audio: value.dialogue.map((part) => ({
           start: part.start,
           duration: part.duration,
         })),
@@ -308,86 +246,27 @@ const tracks = computed<Track[]>(() => {
         muted: value.transition === 'cut',
       })),
     },
-    {
-      id: 'voice',
-      label: '配音',
-      icon: Mic,
-      kind: 'audio',
-      ...flags('voice'),
-      clips: rows.flatMap(({ shot: value, start }) =>
-        value.dialogue.map((item) => ({
-          id: item.id,
-          name: `${roster.value.get(item.assetId)?.name ?? '未指定'}：${item.line}`,
-          kind: 'audio' as const,
-          start: start + item.start,
-          duration: item.duration,
-        })),
-      ),
-    },
-    {
-      id: 'sound',
-      label: '音效',
-      icon: AudioLines,
-      kind: 'audio',
-      ...flags('sound'),
-      clips: rows.flatMap(({ shot: value, start }) =>
-        value.sounds.map((item) => ({
-          id: item.id,
-          name: item.name,
-          kind: 'audio' as const,
-          start: start + item.start,
-          duration: item.duration,
-        })),
-      ),
-    },
   ]
 })
 
-const marked = computed(() => [shotId.value, ...(selected.value ? [selected.value] : [])])
-
-const cues = computed<Cue[]>(() =>
-  placements.value.flatMap(({ shot: value, start }) => [
-    ...value.dialogue.map((item) => ({
-      id: item.id,
-      kind: 'voice' as const,
-      text: item.line,
-      voice: roster.value.get(item.assetId)?.voice,
-      emotion: item.emotion,
-      src: item.audio && media(item.audio),
-      start: start + item.start,
-      duration: item.duration,
-    })),
-    ...value.sounds.map((item) => ({
-      id: item.id,
-      kind: 'sound' as const,
-      sound: item.kind,
-      start: start + item.start,
-      duration: item.duration,
-    })),
-  ]),
+const cuts = computed(() =>
+  [
+    { key: episode.value?.landscape, label: '横屏成片', icon: RectangleHorizontal },
+    { key: episode.value?.portrait, label: '竖屏成片', icon: RectangleVertical },
+  ].flatMap((item) => (item.key ? [{ ...item, href: media(item.key) }] : [])),
 )
 
-const mixer = useMixer({
-  cues: () => cues.value.filter((cue) => !hidden.value.includes(cue.kind)),
-  time,
-  playing,
-  rate,
-  volume,
-})
+const marked = computed(() => [shotId.value, ...(selected.value ? [selected.value] : [])])
 
 const shelves: Destination[] = [
   { id: 'shots', label: '镜头', icon: Clapperboard, group: 'media' },
   { id: 'assets', label: '资产', icon: Users, group: 'media' },
-  { id: 'audio', label: '音频', icon: Music, group: 'audio' },
-  { id: 'text', label: '文字', icon: Type, group: 'overlay' },
-  { id: 'effect', label: '特效', icon: Zap, group: 'overlay' },
   { id: 'camera', label: '运镜', icon: Video, group: 'camera' },
 ]
 
 const hints: Record<string, string> = {
   shots: '搜索场景或画面描述',
   assets: '搜索角色、场景、道具',
-  audio: '搜索音效或台词',
 }
 
 const shelfTitle = computed(() => shelves.find((item) => item.id === panel.value)?.label ?? '')
@@ -402,14 +281,11 @@ const found = computed(() => ({
     matches(value.scene, value.prompt, `镜 ${value.index}`),
   ),
   assets: library.value.filter((item) => matches(item.name, item.summary)),
-  presets: foley.filter((item) => matches(item.name)),
-  lines: lines.value.filter((item) => matches(item.line, roster.value.get(item.assetId)?.name)),
 }))
 
 const totals = computed<Record<string, number>>(() => ({
   shots: found.value.shots.length,
   assets: found.value.assets.length,
-  audio: found.value.presets.length + found.value.lines.length,
 }))
 
 const empty = computed(() => Boolean(term.value) && totals.value[panel.value] === 0)
@@ -417,29 +293,28 @@ const empty = computed(() => Boolean(term.value) && totals.value[panel.value] ==
 const counts = computed(() => {
   const value = shot.value
   return {
-    elements: value
-      ? value.bubbles.length + value.effects.length + value.dialogue.length + value.sounds.length
-      : 0,
+    elements: value ? value.dialogue.length : 0,
     unmet: checks.value.filter((item) => !item.ok).length,
   }
 })
 
-const draft = computed<ShotDraft>(() => ({
-  scene: shot.value?.scene ?? '',
-  size: shot.value?.size ?? 'medium',
-  prompt: shot.value?.prompt ?? '',
-  note: shot.value?.note ?? '',
-}))
+function rewrite(prompt: string) {
+  const value = shot.value
+  if (!value) return
+  history.record(value.id, { prompt })
+  for (const slot of ['first', 'last'] as const) {
+    generate.mutate({ kind: 'keyframe', shotId: value.id, slot })
+  }
+}
 
 const flow: Record<ShotStatus, { label: string; next: ShotStatus }[]> = {
   draft: [],
   keyframe: [],
   generating: [{ label: '生成完成', next: 'review' }],
   review: [
-    { label: '通过', next: 'voiced' },
+    { label: '通过', next: 'composed' },
     { label: '打回', next: 'draft' },
   ],
-  voiced: [{ label: '合成', next: 'composed' }],
   composed: [{ label: '重生成', next: 'keyframe' }],
   failed: [{ label: '重试', next: 'keyframe' }],
 }
@@ -510,16 +385,6 @@ function retime(id: string, start: number, span: number) {
   } as ShotPatch)
 }
 
-function shift(id: string, x: number, y: number) {
-  const owner = owners.value.get(id)
-  if (!owner || (owner.key !== 'bubbles' && owner.key !== 'effects')) return
-  const value = owner.placement.shot
-  const items = value[owner.key] as { id: string; x: number; y: number }[]
-  history.record(value.id, {
-    [owner.key]: items.map((part) => (part.id === id ? { ...part, x, y } : part)),
-  } as ShotPatch)
-}
-
 function remove(id: string) {
   const owner = owners.value.get(id)
   if (!owner?.key) return
@@ -527,73 +392,6 @@ function remove(id: string) {
   const items = value[owner.key] as { id: string }[]
   history.record(value.id, { [owner.key]: items.filter((part) => part.id !== id) } as ShotPatch)
   if (selected.value === id) selected.value = null
-}
-
-function cursor(): Spot | null {
-  const value = shot.value
-  const home = placement.value
-  if (!value || !home) return null
-  const at = tenth(Math.min(Math.max(0, time.value - home.start), value.duration - 0.5))
-  return { value, at, room: tenth(value.duration - at) }
-}
-
-function insert<K extends Key>(key: K, build: (spot: Spot) => Omit<Shot[K][number], 'id'>) {
-  const spot = cursor()
-  if (!spot) return
-  const id = `${spot.value.id}-${key}-${Date.now().toString(36)}`
-  history.record(spot.value.id, {
-    [key]: [...spot.value[key], { ...build(spot), id }],
-  } as ShotPatch)
-  selected.value = id
-  tab.value = 'element'
-}
-
-function addBubble(shape: BubbleShape) {
-  insert('bubbles', ({ value, at, room }) => ({
-    assetId:
-      value.cast.find((id) => roster.value.get(id)?.kind === 'character') ??
-      library.value.find((item) => item.kind === 'character')?.id ??
-      '',
-    text: shape === 'caption' ? '旁白' : '新台词',
-    x: 50,
-    y: shape === 'caption' ? 86 : 28,
-    shape,
-    start: at,
-    duration: Math.min(2, room),
-  }))
-}
-
-function addEffect(style: EffectStyle) {
-  insert('effects', ({ at, room }) => ({
-    text: onomatopoeia[style],
-    x: 64,
-    y: 40,
-    style,
-    start: at,
-    duration: Math.min(1.2, room),
-  }))
-}
-
-function addSound(kind: FoleyKind) {
-  const preset = foley.find((item) => item.kind === kind)
-  if (!preset) return
-  insert('sounds', ({ at, room }) => ({
-    kind,
-    name: preset.name,
-    start: at,
-    duration: Math.min(preset.duration, room),
-  }))
-}
-
-function listen(id: string) {
-  const cue = cues.value.find((item) => item.id === id)
-  if (cue) mixer.preview(cue)
-}
-
-function audition(kind: FoleyKind) {
-  const preset = foley.find((item) => item.kind === kind)
-  if (preset)
-    mixer.preview({ id: kind, kind: 'sound', sound: kind, start: 0, duration: preset.duration })
 }
 
 function toggleCast(assetId: string) {
@@ -809,11 +607,11 @@ const actions = computed<Action[]>(() => [
     run: () => shot.value && generate.mutate({ kind: 'video', shotId: shot.value.id }),
   },
   {
-    id: 'voice',
+    id: 'episode',
     group: '生成',
-    label: '生成配音',
-    icon: Mic,
-    run: () => shot.value && generate.mutate({ kind: 'voice', shotId: shot.value.id }),
+    label: '一键生成整集',
+    icon: Wand2,
+    run: () => generate.mutate({ kind: 'episode', episodeId: episodeId.value }),
   },
   {
     id: 'compose',
@@ -979,33 +777,6 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                 :cast="shot?.cast ?? []"
                 @toggle="toggleCast"
               />
-              <Soundboard
-                v-else-if="panel === 'audio'"
-                :presets="found.presets"
-                :lines="found.lines"
-                :assets="library"
-                :selected="selected"
-                @add="addSound"
-                @preview="audition"
-                @listen="listen"
-                @select="choose"
-              />
-              <Lettering
-                v-else-if="panel === 'text'"
-                kind="bubble"
-                :items="shot?.bubbles ?? []"
-                :selected="selected"
-                @add="addBubble"
-                @select="choose"
-              />
-              <Lettering
-                v-else-if="panel === 'effect'"
-                kind="effect"
-                :items="shot?.effects ?? []"
-                :selected="selected"
-                @add="addEffect"
-                @select="choose"
-              />
               <Presets v-else-if="shot" :move="shot.move" @apply="apply" />
             </div>
           </ResizablePanel>
@@ -1061,14 +832,32 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                   :assets="library"
                   :time="local"
                   :playing="playing"
+                  :volume="volume"
+                  :rate="rate"
                   :framing="framing"
                   :captions="captions"
                   :selected="selected"
                   @frame="setFrame"
-                  @shift="shift"
                   @select="(id) => (id ? choose(id) : (selected = null))"
                 />
                 <template #actions>
+                  <DropdownMenu v-if="cuts.length">
+                    <Tip label="查看成片">
+                      <DropdownMenuTrigger as-child>
+                        <Button variant="ghost" size="icon-sm">
+                          <PlayCircle />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </Tip>
+                    <DropdownMenuContent align="end" class="min-w-36">
+                      <DropdownMenuItem v-for="cut in cuts" :key="cut.label" as-child>
+                        <a :href="cut.href" target="_blank" rel="noreferrer">
+                          <component :is="cut.icon" />
+                          {{ cut.label }}
+                        </a>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Format :model-value="series.aspect" @update:model-value="setAspect" />
                   <Tip v-if="!inspector" label="展开检查器">
                     <Button variant="ghost" size="icon-sm" @click="showInspector(true)">
@@ -1076,22 +865,24 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                     </Button>
                   </Tip>
                 </template>
+                <template #transport>
+                  <Transport
+                    v-model:playing="playing"
+                    v-model:rate="rate"
+                    v-model:volume="volume"
+                    :time="time"
+                    :duration="total"
+                    @skip="skip"
+                  >
+                    <Tip :label="isFullscreen ? '退出全屏' : '全屏'" shortcut="F">
+                      <Button variant="ghost" size="icon-sm" @click="toggleScreen()">
+                        <Shrink v-if="isFullscreen" />
+                        <Expand v-else />
+                      </Button>
+                    </Tip>
+                  </Transport>
+                </template>
               </Preview>
-              <Transport
-                v-model:playing="playing"
-                v-model:rate="rate"
-                v-model:volume="volume"
-                :time="time"
-                :duration="total"
-                @skip="skip"
-              >
-                <Tip :label="isFullscreen ? '退出全屏' : '全屏'" shortcut="F">
-                  <Button variant="ghost" size="icon-sm" @click="toggleScreen()">
-                    <Shrink v-if="isFullscreen" />
-                    <Expand v-else />
-                  </Button>
-                </Tip>
-              </Transport>
             </div>
           </ResizablePanel>
 
@@ -1157,11 +948,11 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
 
               <TabsContent value="frame" class="min-h-0 overflow-y-auto">
                 <Section title="镜头信息" :icon="FileText">
-                  <ShotForm
-                    :key="JSON.stringify(draft)"
-                    :value="draft"
-                    :busy="patch.isPending.value"
-                    @submit="history.record(shot.id, $event)"
+                  <Brief
+                    :shot="shot"
+                    :assets="library"
+                    :busy="patch.isPending.value || generate.isPending.value"
+                    @rewrite="rewrite"
                   />
                 </Section>
                 <Section title="时长与转场" :icon="Timer">
@@ -1192,7 +983,6 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                   @change="history.record(shot.id, $event)"
                   @select="(id) => (id ? choose(id) : (selected = null))"
                   @remove="remove"
-                  @listen="listen"
                 />
               </TabsContent>
 
@@ -1202,6 +992,20 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                 </Section>
                 <Section title="提示词" :icon="FileText">
                   <Prompt class="text-data" :prompt="shot.prompt" :assets="library" />
+                </Section>
+                <Section title="整集" :icon="Wand2">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    :disabled="generate.isPending.value"
+                    @click="generate.mutate({ kind: 'episode', episodeId })"
+                  >
+                    <Wand2 />
+                    一键生成整集
+                  </Button>
+                  <p class="text-muted-foreground mt-2 text-micro">
+                    补齐资产参考图、首尾帧与视频，最后合成横屏与竖屏两版成片
+                  </p>
                 </Section>
                 <Section title="关键帧与视频" :icon="Sparkles">
                   <Pipeline
@@ -1244,16 +1048,6 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
       <ResizablePanel :default-size="40" :min-size="24" :max-size="62" class="bg-background">
         <div ref="dock" class="@container flex h-full flex-col">
           <div class="flex h-11 shrink-0 items-center gap-1 px-3">
-            <Tip label="为当前镜头的台词生成配音">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                :disabled="!shot?.dialogue.length || generate.isPending.value"
-                @click="shot && generate.mutate({ kind: 'voice', shotId: shot.id })"
-              >
-                <Mic class="text-destructive" />
-              </Button>
-            </Tip>
             <Tip label="字幕">
               <Toggle v-model="captions" size="sm" :class="toggled">
                 <Captions />

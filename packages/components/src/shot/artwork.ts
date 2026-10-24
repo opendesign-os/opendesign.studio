@@ -1,4 +1,5 @@
 import type { Frame, Layer, Shot } from '@opendesign/models'
+import { media } from '@opendesign/queries'
 
 function hue(value: string) {
   let total = 0
@@ -31,6 +32,11 @@ export function cover(shot: Shot, deep: boolean) {
     .reverse()
     .map((entry) => entry.image)
     .join(', ')
+}
+
+export function poster(shot: Shot, deep: boolean) {
+  const key = shot.keyframes.find((item) => item.slot === 'first')?.image
+  return key ? `url(${media(key)})` : cover(shot, deep)
 }
 
 export function crop(frame: Frame) {

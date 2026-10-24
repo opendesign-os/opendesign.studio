@@ -29,7 +29,8 @@ export const episodes = createTable(
     title: text('title').notNull(),
     hook: text('hook').notNull().default(''),
     script: text('script').notNull().default(''),
-    output: text('output'),
+    landscape: text('landscape'),
+    portrait: text('portrait'),
   },
   (table) => [index('episodes_series_idx').on(table.seriesId)],
 )

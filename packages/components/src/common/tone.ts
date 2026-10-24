@@ -21,7 +21,6 @@ export const tones: {
     keyframe: 'neutral',
     generating: 'info',
     review: 'warn',
-    voiced: 'accent',
     composed: 'success',
     failed: 'danger',
   },

@@ -12,6 +12,7 @@
       "!**/*.svg",
       "!pnpm-lock.yaml",
       "!**/routeTree.gen.ts",
+      "!apps/api/drizzle",
       "!packages/shadcn/src/ui"
     ]
   },

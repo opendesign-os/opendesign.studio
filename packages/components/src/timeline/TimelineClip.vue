@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Type, Zap } from '@lucide/vue'
 import { cn } from '@opendesign/shadcn'
 import { computed } from 'vue'
 import { fills, type Tone } from '../common/tone'
@@ -82,7 +81,7 @@ const grip = computed(() => (film.value ? 'w-3.5' : 'w-3'))
           <span
             v-for="index in tiles"
             :key="index"
-            class="h-full shrink-0"
+            class="h-full shrink-0 bg-cover bg-center"
             :style="{ width: `${TILE}px`, backgroundImage: clip.cover }"
           />
         </div>
@@ -110,24 +109,6 @@ const grip = computed(() => (film.value ? 'w-3.5' : 'w-3'))
           :style="{ height: `${height}%` }"
         />
       </div>
-    </div>
-
-    <div
-      v-else-if="clip.kind === 'text' || clip.kind === 'effect'"
-      class="pointer-events-none flex size-full min-w-0 items-center gap-1.5 overflow-hidden rounded-[7px] px-1"
-    >
-      <span
-        :class="
-          cn(
-            'flex size-[18px] shrink-0 items-center justify-center rounded-md text-white',
-            clip.kind === 'text' ? 'bg-primary' : 'bg-container',
-          )
-        "
-      >
-        <Type v-if="clip.kind === 'text'" class="size-3" />
-        <Zap v-else class="size-3" />
-      </span>
-      <span class="text-meta truncate font-medium">{{ clip.name }}</span>
     </div>
 
     <div v-else class="pointer-events-none flex size-full overflow-hidden rounded-[7px] p-0.5">

@@ -7,10 +7,10 @@ import { keys, useInvalidate } from '../common/cache'
 
 const affects: Record<TaskKind, QueryKey[]> = {
   script: [keys.shots(), keys.candidates(), keys.episode(), keys.episodes()],
+  episode: [keys.shots(), keys.assets(), keys.candidates(), keys.episode(), keys.episodes()],
   image: [keys.assets()],
   keyframe: [keys.shots(), keys.episode(), keys.episodes()],
   video: [keys.shots(), keys.episode(), keys.episodes()],
-  voice: [keys.shots()],
   compose: [keys.episode(), keys.episodes()],
 }
 

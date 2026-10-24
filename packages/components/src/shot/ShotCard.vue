@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Clapperboard, MessageSquare, Mic } from '@lucide/vue'
+import { Clapperboard, Mic } from '@lucide/vue'
 import type { Asset, Shot } from '@opendesign/models'
 import { cameraLabel, shotSizeLabel } from '@opendesign/models'
 import { Badge, cn } from '@opendesign/shadcn'
@@ -58,10 +58,6 @@ const cast = computed(() => props.assets.filter((item) => props.shot.cast.includ
         <Badge v-if="shot.dialogue.length">
           <Mic class="size-3" />
           {{ shot.dialogue.length }}
-        </Badge>
-        <Badge v-if="shot.bubbles.length">
-          <MessageSquare class="size-3" />
-          {{ shot.bubbles.length }}
         </Badge>
         <span class="ml-auto flex -space-x-1.5">
           <Avatar

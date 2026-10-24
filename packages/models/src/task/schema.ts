@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { view } from '../asset/schema'
 import { slot } from '../shot/schema'
 
-export const taskKind = z.enum(['script', 'image', 'keyframe', 'video', 'voice', 'compose'])
+export const taskKind = z.enum(['script', 'episode', 'image', 'keyframe', 'video', 'compose'])
 
 export const taskStatus = z.enum(['queued', 'running', 'done', 'failed'])
 
@@ -23,10 +23,10 @@ export const task = z.object({
 export const taskRequest = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('script'), episodeId: z.uuid() }),
   z.object({ kind: z.literal('compose'), episodeId: z.uuid() }),
+  z.object({ kind: z.literal('episode'), episodeId: z.uuid() }),
   z.object({ kind: z.literal('image'), assetId: z.uuid(), view }),
   z.object({ kind: z.literal('keyframe'), shotId: z.uuid(), slot }),
   z.object({ kind: z.literal('video'), shotId: z.uuid() }),
-  z.object({ kind: z.literal('voice'), shotId: z.uuid() }),
 ])
 
 export type TaskKind = z.infer<typeof taskKind>
@@ -34,6 +34,7 @@ export type TaskStatus = z.infer<typeof taskStatus>
 export type Task = z.infer<typeof task>
 export type TaskRequest = z.infer<typeof taskRequest>
 
-export function live(item: Task) {
-  return item.status === 'queued' || item.status === 'running'
+export function live(item: Task | TaskStatus) {
+  const status = typeof item === 'string' ? item : item.status
+  return status === 'queued' || status === 'running'
 }

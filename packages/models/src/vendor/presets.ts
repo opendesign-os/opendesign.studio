@@ -22,7 +22,6 @@ export const presets: Record<Preset, Template> = {
     models: {
       text: ['gpt-6.1-sol', 'gpt-5.5', 'gpt-5.4-mini'],
       image: ['gpt-image-2.5-flare', 'gpt-image-2', 'gpt-image-1.5'],
-      voice: ['gpt-4o-mini-tts', 'tts-1-hd'],
     },
   },
   deepseek: {
@@ -33,9 +32,13 @@ export const presets: Record<Preset, Template> = {
   },
   minimax: {
     name: 'MiniMax',
-    protocol: 'anthropic',
-    endpoint: 'https://api.minimaxi.com/anthropic/v1',
-    models: { text: [] },
+    protocol: 'minimax',
+    endpoint: 'https://api.minimax.cn',
+    models: {
+      text: ['MiniMax-M3', 'MiniMax-M3.1-Flash'],
+      image: ['image-01', 'image-01-live'],
+      video: ['MiniMax-H3', 'MiniMax-H3-Max', 'MiniMax-H3-Highspeed', 'MiniMax-H3-Lite'],
+    },
   },
   moonshot: {
     name: '月之暗面',
@@ -87,17 +90,18 @@ export const presets: Record<Preset, Template> = {
     name: '硅基流动',
     protocol: 'compatible',
     endpoint: 'https://api.siliconflow.cn/v1',
-    models: { text: [], image: [], voice: [] },
+    models: { text: [], image: [] },
   },
 }
 
 export const abilities: Record<Protocol, ProviderKind[]> = {
   anthropic: ['text'],
-  openai: ['text', 'image', 'voice'],
-  compatible: ['text', 'image', 'voice'],
+  openai: ['text', 'image'],
+  compatible: ['text', 'image'],
   bytedance: ['text', 'image', 'video'],
   klingai: ['video'],
   alibaba: ['text', 'video'],
+  minimax: ['text', 'image', 'video'],
 }
 
 type Source = { preset?: Preset | null; protocol: Protocol }

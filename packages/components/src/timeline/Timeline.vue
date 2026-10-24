@@ -45,7 +45,7 @@ const GUTTER = 96
 const TAIL = 160
 const STEPS = [1, 2, 5, 10, 15, 30, 60]
 
-const heights: Record<Clip['kind'], number> = { film: 92, text: 40, effect: 40, audio: 48 }
+const heights: Record<Clip['kind'], number> = { film: 92, audio: 48 }
 
 const scroller = ref<HTMLElement | null>(null)
 const lanes = ref<HTMLElement | null>(null)
